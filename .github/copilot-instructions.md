@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-This is a clean architecture Go API starter kit using **Echo v4**, **GORM**, and **Casbin RBAC**. The service supports PostgreSQL, MySQL/MariaDB, and SQLite.
+This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. The service supports PostgreSQL, MySQL/MariaDB, and SQLite.
 
 **Current Setup**: Uses MariaDB 12 via Docker Compose on port 3306.
 
@@ -37,12 +37,11 @@ func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
 type User struct {
     db   *gorm.DB
     udb  MyDB
-    rbac rbac.Intf
     cr   Crypter
 }
 
-func New(db *gorm.DB, udb MyDB, rbacSvc rbac.Intf, cr Crypter) *User {
-    return &User{db: db, udb: udb, rbac: rbacSvc, cr: cr}
+func New(db *gorm.DB, udb MyDB, cr Crypter) *User {
+    return &User{db: db, udb: udb, cr: cr}
 }
 ```
 
@@ -88,23 +87,7 @@ type Base struct {
 
 Why? This project uses `int` IDs instead of `uint` (gorm.Model default).
 
-### 4. RBAC Authorization
-
-Permissions are defined in [internal/rbac/service.go](internal/rbac/service.go#L10-L27). The hierarchy is `superadmin` → `admin` → `user`.
-
-Check permissions in services:
-```go
-if !au.Role.CheckRole(model.RoleSuperAdmin, model.RoleAdmin) {
-    return rbac.ErrForbiddenAction
-}
-```
-
-Use constants from [internal/model/rbac.go](internal/model/rbac.go):
-- Roles: `RoleSuperAdmin`, `RoleAdmin`, `RoleUser`
-- Objects: `ObjectUser`, `ObjectCountry`, `ObjectAny`
-- Actions: `ActionViewAll`, `ActionCreate`, `ActionUpdate`, `ActionDelete`, `ActionAny`
-
-### 5. Authentication Flow
+### 4. Authentication Flow
 
 JWT middleware extracts `model.AuthUser` from token. Access in handlers:
 ```go
@@ -118,13 +101,13 @@ Auth endpoints (`/login`, `/refresh-token`) are in [internal/api/auth](internal/
 
 Protected routes use `v1Router.Use(jwtSvc.MWFunc())` - see [cmd/api/main.go](cmd/api/main.go#L90-L95).
 
-### 6. Custom Validators
+### 5. Custom Validators
 
 Register custom validators in [pkg/server/validator.go](pkg/server/validator.go#L15-L20). Available:
 - `validate:"mobile"` - Phone number format `^(\+\d{1,3})?\s?\d{5,15}$`
 - `validate:"date"` - Date format `YYYY-MM-DD` or with `T00:00:00Z`
 
-### 7. Migrations
+### 6. Migrations
 
 Migration files use **gormigrate** in [internal/functions/migration/main.go](internal/functions/migration/main.go#L67-L101). 
 
@@ -132,7 +115,7 @@ Migration files use **gormigrate** in [internal/functions/migration/main.go](int
 
 For MySQL tables, use `tx.Set("gorm:table_options", defaultTableOpts)` to set `ENGINE=InnoDB ROW_FORMAT=DYNAMIC`.
 
-### 8. Logging
+### 7. Logging
 
 The project uses **Uber Zap** for structured logging with JSON format output.
 

@@ -2,26 +2,23 @@ package country
 
 import (
 	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/rbac"
 	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
 
 	"gorm.io/gorm"
 )
 
 // New creates new country application service
-func New(db *gorm.DB, cdb dbutil.Intf, rbacSvc rbac.Intf) *Country {
+func New(db *gorm.DB, cdb dbutil.Intf) *Country {
 	return &Country{
-		db:   db,
-		cdb:  cdb,
-		rbac: rbacSvc,
+		db:  db,
+		cdb: cdb,
 	}
 }
 
 // Country represents country application service
 type Country struct {
-	db   *gorm.DB
-	cdb  dbutil.Intf
-	rbac rbac.Intf
+	db  *gorm.DB
+	cdb dbutil.Intf
 }
 
 // NewDB returns a new country database instance

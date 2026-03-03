@@ -10,7 +10,6 @@ import (
 	"github.com/vuduongtp/go-core/internal/api/country"
 	"github.com/vuduongtp/go-core/internal/api/user"
 	userdb "github.com/vuduongtp/go-core/internal/db/user"
-	"github.com/vuduongtp/go-core/internal/rbac"
 	dbutil "github.com/vuduongtp/go-core/internal/util/db"
 	"github.com/vuduongtp/go-core/pkg/logging"
 	"github.com/vuduongtp/go-core/pkg/server"
@@ -84,11 +83,10 @@ func main() {
 
 	// Initialize services
 	crypterSvc := crypter.New()
-	rbacSvc := rbac.New(cfg.Debug)
 	jwtSvc := jwt.New(cfg.JwtAlgorithm, cfg.JwtSecret, cfg.JwtDuration)
 	authSvc := auth.New(db, userDB, jwtSvc, crypterSvc)
-	userSvc := user.New(db, userDB, rbacSvc, crypterSvc)
-	countrySvc := country.New(db, countryDB, rbacSvc)
+	userSvc := user.New(db, userDB, crypterSvc)
+	countrySvc := country.New(db, countryDB)
 
 	// Initialize root API
 	auth.NewHTTP(authSvc, e)

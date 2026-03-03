@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/server"
 	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
 	httputil "github.com/vuduongtp/go-core/pkg/util/http"
 
@@ -103,10 +102,6 @@ func (h *HTTP) create(c echo.Context) error {
 	r.Mobile = strings.TrimSpace(strings.Replace(r.Mobile, " ", "", -1))
 	r.Role = strings.TrimSpace(r.Role)
 
-	if err := validateRole(&r.Role); err != nil {
-		return err
-	}
-
 	resp, err := h.svc.Create(c.Request().Context(), h.auth.User(c), r)
 	if err != nil {
 		return err
@@ -202,10 +197,6 @@ func (h *HTTP) update(c echo.Context) error {
 	r.Mobile = httputil.RemoveSpacePointer(r.Mobile)
 	r.Role = httputil.RemoveSpacePointer(r.Role)
 
-	if err := validateRole(r.Role); err != nil {
-		return err
-	}
-
 	resp, err := h.svc.Update(c.Request().Context(), h.auth.User(c), id, r)
 	if err != nil {
 		return err
@@ -289,22 +280,4 @@ func (h *HTTP) changePassword(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
-}
-
-func validateRole(input *string) error {
-	if input == nil {
-		return nil
-	}
-
-	validRole := false
-	for _, role := range model.AvailableRoles {
-		if role == *input {
-			validRole = true
-			break
-		}
-	}
-	if !validRole {
-		return server.NewHTTPValidationError("Invalid role")
-	}
-	return nil
 }

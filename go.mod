@@ -6,7 +6,6 @@ require (
 	github.com/aws/aws-lambda-go v1.53.0
 	github.com/aws/aws-sdk-go v1.44.254
 	github.com/caarlos0/env/v5 v5.1.4
-	github.com/casbin/casbin v1.9.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/go-playground/validator/v10 v10.13.0
@@ -30,7 +29,6 @@ require (
 )
 
 require (
-	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect

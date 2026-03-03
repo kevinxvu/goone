@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/vuduongtp/go-core/config"
-	"github.com/vuduongtp/go-core/internal/model"
 	dbutil "github.com/vuduongtp/go-core/internal/util/db"
 	"github.com/vuduongtp/go-core/pkg/util/crypter"
 	"github.com/vuduongtp/go-core/pkg/util/migration"
@@ -104,19 +103,16 @@ func Run() (respErr error) {
 						Username: "superadmin",
 						Password: os.Getenv("SUPERADMIN_PWD"),
 						Email:    "superadmin@example.com",
-						Role:     model.RoleSuperAdmin,
 					},
 					{
 						Username: "admin",
 						Password: os.Getenv("ADMIN_PWD"),
 						Email:    "admin@example.com",
-						Role:     model.RoleAdmin,
 					},
 					{
 						Username: "user",
 						Password: os.Getenv("USER_PWD"),
 						Email:    "user@example.com",
-						Role:     model.RoleUser,
 					},
 				}
 				for _, usr := range defaultUsers {

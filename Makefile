@@ -54,11 +54,6 @@ build.arm: clean ## Build the server binary file for ARM host
 build.air:  ## Build the server binary file for air hot reload
 	sh scripts/build-air.sh
 
-install:
-	echo "Not ready yet!"
-	echo "To setup PostgreSQL, check 'scripts/install-pg.sh'"
-	echo "To setup the server, check 'scripts/install-service.sh'"
-
 clean: ## Clean up the built & test files
 	rm -rf ./server ./*.out
 
@@ -66,29 +61,6 @@ specs: ## Generate swagger specs
 	swag fmt -g /cmd/api/main.go
 	swag fmt -d ./internal/api
 	swag init --parseInternal --parseDependency --parseDepth 1 -g /cmd/api/main.go
-
-up: ## Execute `up` commands per env. Ex: make up dev "logs -f"
-	sh scripts/up.sh $(filter-out $@,$(MAKECMDGOALS))
-
-dev.deploy: ## Deploy to DEV environment
-	scripts/apex.sh dev deploy --alias dev
-	scripts/apex.sh dev invoke --alias dev migration
-	scripts/up.sh dev deploy dev
-
-demo.deploy: ## Deploy to DEMO environment
-	scripts/apex.sh dev deploy --alias demo
-	scripts/apex.sh dev invoke --alias demo migration
-	scripts/up.sh dev deploy demo
-
-stg.deploy: ## Deploy to STAGING environment
-	scripts/apex.sh client deploy --alias staging
-	scripts/apex.sh client invoke --alias staging migration
-	scripts/up.sh client deploy staging
-
-prod.deploy: ## Deploy to PROD environment
-	scripts/apex.sh client deploy --alias production
-	scripts/apex.sh client invoke --alias production migration
-	scripts/up.sh client deploy production
 
 %: # prevent error for `up` target when passing arguments
 ifeq ($(filter up,$(MAKECMDGOALS)),up)

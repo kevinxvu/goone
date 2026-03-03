@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/lo"
 	"github.com/vuduongtp/go-core/pkg/logging"
+	"go.uber.org/zap/zapcore"
 )
 
 // Config represents secure specific config
@@ -61,9 +62,9 @@ func BodyDump() echo.MiddlewareFunc {
 				reqBody, _ = json.Marshal(bodymap)
 			}
 			if lo.Contains([]string{"Content-Disposition: form-data"}, string(reqBody)) {
-				logging.Component("request").Info("Request Body: multipart/form-data")
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "request"}).Info("Request Body: multipart/form-data")
 			} else {
-				logging.Component("request").Info(string(reqBody))
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "request"}).Info(string(reqBody))
 			}
 		}
 
@@ -78,9 +79,9 @@ func BodyDump() echo.MiddlewareFunc {
 				resBody, _ = json.Marshal(bodymap)
 			}
 			if lo.Contains([]string{"Content-Disposition: form-data"}, string(reqBody)) {
-				logging.Component("response").Info("Request Body: multipart/form-data")
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "response"}).Info("Request Body: multipart/form-data")
 			} else {
-				logging.Component("response").Info(string(resBody))
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "response"}).Info(string(resBody))
 			}
 		}
 	})

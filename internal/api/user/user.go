@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/rbac"
 	"github.com/vuduongtp/go-core/pkg/server"
 	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
 	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
@@ -20,10 +19,6 @@ var (
 
 // Create creates a new user account
 func (s *User) Create(ctx context.Context, authUsr *model.AuthUser, data CreationData) (*model.User, error) {
-	if err := s.enforce(authUsr, model.ActionCreateAll); err != nil {
-		return nil, err
-	}
-
 	if existed, err := s.udb.Exist(ctx, s.db, map[string]interface{}{"username": data.Username}); err != nil || existed {
 		return nil, ErrUsernameExisted.SetInternal(err)
 	}
@@ -48,10 +43,6 @@ func (s *User) Create(ctx context.Context, authUsr *model.AuthUser, data Creatio
 
 // View returns single user
 func (s *User) View(ctx context.Context, authUsr *model.AuthUser, id int) (*model.User, error) {
-	if err := s.enforce(authUsr, model.ActionViewAll); err != nil {
-		return nil, err
-	}
-
 	rec := new(model.User)
 	if err := s.udb.View(ctx, s.db, rec, id); err != nil {
 		return nil, ErrUserNotFound.SetInternal(err)
@@ -62,10 +53,6 @@ func (s *User) View(ctx context.Context, authUsr *model.AuthUser, id int) (*mode
 
 // List returns list of users
 func (s *User) List(ctx context.Context, authUsr *model.AuthUser, lq *dbutil.ListQueryCondition, count *int64) ([]*model.User, error) {
-	if err := s.enforce(authUsr, model.ActionViewAll); err != nil {
-		return nil, err
-	}
-
 	var data []*model.User
 	if err := s.udb.List(ctx, s.db, &data, lq, count); err != nil {
 		return nil, server.NewHTTPInternalError("Error listing user").SetInternal(err)
@@ -76,10 +63,6 @@ func (s *User) List(ctx context.Context, authUsr *model.AuthUser, lq *dbutil.Lis
 
 // Update updates user information
 func (s *User) Update(ctx context.Context, authUsr *model.AuthUser, id int, data UpdateData) (*model.User, error) {
-	if err := s.enforce(authUsr, model.ActionUpdateAll); err != nil {
-		return nil, err
-	}
-
 	// optimistic update
 	updates := structutil.ToMap(data)
 	if err := s.udb.Update(ctx, s.db, updates, id); err != nil {
@@ -96,10 +79,6 @@ func (s *User) Update(ctx context.Context, authUsr *model.AuthUser, id int, data
 
 // Delete deletes a user
 func (s *User) Delete(ctx context.Context, authUsr *model.AuthUser, id int) error {
-	if err := s.enforce(authUsr, model.ActionDeleteAll); err != nil {
-		return err
-	}
-
 	if existed, err := s.udb.Exist(ctx, s.db, id); err != nil || !existed {
 		return ErrUserNotFound.SetInternal(err)
 	}
@@ -136,13 +115,5 @@ func (s *User) ChangePassword(ctx context.Context, authUsr *model.AuthUser, data
 		return server.NewHTTPInternalError("Error changing password").SetInternal(err)
 	}
 
-	return nil
-}
-
-// enforce checks user permission to perform the action
-func (s *User) enforce(authUsr *model.AuthUser, action string) error {
-	if !s.rbac.Enforce(authUsr.Role, model.ObjectUser, action) {
-		return rbac.ErrForbiddenAction
-	}
 	return nil
 }
