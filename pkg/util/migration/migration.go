@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/labstack/gommon/log"
+	"github.com/vuduongtp/go-core/pkg/logging"
 	"gorm.io/gorm"
 )
 
-var logger = log.New("migration")
+var logger = logging.Component("migration")
 
 var migrateDown = flag.Bool("down", false, "Undo the last migration or undo til the specific --version")
 var migrateVersion = flag.String("version", "", "Exec the migrations up/down to the given migration that matches")
@@ -25,8 +25,6 @@ var DefaultMigrationOptions = &gormigrate.Options{
 
 // Run executes the migrations given
 func Run(db *gorm.DB, migrations []*gormigrate.Migration) {
-	logger.SetHeader("${time_rfc3339_nano} - [${level}]")
-	// logger.DisableColor()
 	parseFlags()
 
 	m := gormigrate.New(db, DefaultMigrationOptions, migrations)
@@ -47,7 +45,7 @@ func Run(db *gorm.DB, migrations []*gormigrate.Migration) {
 	}
 
 	if err != nil {
-		logger.Fatalf("Migration failed: %v", err)
+		logger.Sugar().Fatalf("Migration failed: %v", err)
 	}
 
 	logger.Info("Migration completed")

@@ -11,9 +11,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/vuduongtp/go-core/pkg/logging"
+	loggerMw "github.com/vuduongtp/go-core/pkg/server/middleware/logger"
 	"github.com/vuduongtp/go-core/pkg/server/middleware/secure"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
-	"github.com/vuduongtp/go-logadapter"
 )
 
 // Config represents server specific config
@@ -66,8 +66,8 @@ func New(cfg *Config) *echo.Echo {
 	e.HTTPErrorHandler = NewErrorHandler(e).Handle
 	e.Binder = NewBinder()
 	e.Debug = cfg.Debug
-	e.Logger = logadapter.NewEchoLogger()
-	e.Use(logadapter.NewEchoLoggerMiddleware())
+	e.Logger = logging.NewEchoLogger()
+	e.Use(loggerMw.Middleware())
 	if e.Debug {
 		e.Logger.SetLevel(log.DEBUG)
 		e.Use(secure.BodyDump())
@@ -93,9 +93,9 @@ func Start(e *echo.Echo, isDevelopment bool) {
 	go func() {
 		if err := e.StartServer(e.Server); err != nil {
 			if err == http.ErrServerClosed {
-				logger.Info("shutting down the server")
+				logging.DefaultLogger().Info("shutting down the server")
 			} else {
-				logger.Error("shutting down the server", err)
+				logging.DefaultLogger().Error("shutting down the server", logging.ErrField(err))
 			}
 		}
 	}()
@@ -109,6 +109,6 @@ func Start(e *echo.Echo, isDevelopment bool) {
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		// Error from closing listeners, or context timeout:
-		logger.Error(fmt.Sprintf("⇨ http server shutting down error: %v\n", err))
+		logging.DefaultLogger().Sugar().Errorf("⇨ http server shutting down error: %v\n", err)
 	}
 }

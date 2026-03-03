@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vuduongtp/go-core/pkg/logging"
 	"github.com/vuduongtp/go-core/pkg/server"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -43,7 +43,7 @@ func (j *Service) MWFunc() echo.MiddlewareFunc {
 			token, err := j.ParseTokenFromHeader(c)
 			if err != nil || !token.Valid {
 				if err != nil {
-					logger.LogErrorf(c.Request().Context(), "error parsing token: %+v", err.Error())
+					logging.FromContext(c.Request().Context()).Sugar().Errorf("error parsing token: %+v", err.Error())
 				}
 				return server.NewHTTPError(http.StatusUnauthorized, "UNAUTHORIZED", "Your session is unauthorized or has expired.").SetInternal(err)
 			}

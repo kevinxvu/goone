@@ -8,7 +8,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
+	"github.com/vuduongtp/go-core/pkg/logging"
+	"go.uber.org/zap"
 )
 
 const (
@@ -98,7 +99,7 @@ func (ce *ErrorHandler) Handle(err error, c echo.Context) {
 			httpErr.Message = e.Message
 		}
 		if e.Internal != nil && !c.Response().Committed {
-			logger.LogErrorf(c.Request().Context(), "internal err: %+v", e.Internal)
+			logging.FromContext(c.Request().Context()).Error("internal error", zap.Error(e.Internal))
 		}
 
 	case *echo.HTTPError:
@@ -117,7 +118,7 @@ func (ce *ErrorHandler) Handle(err error, c echo.Context) {
 			httpErr.Message = fmt.Sprintf("%+v", em)
 		}
 		if e.Internal != nil && !c.Response().Committed {
-			logger.LogErrorf(c.Request().Context(), "internal err: %+v", e.Internal)
+			logging.FromContext(c.Request().Context()).Error("internal error", zap.Error(e.Internal))
 		}
 
 	case validator.ValidationErrors:
@@ -142,7 +143,7 @@ func (ce *ErrorHandler) Handle(err error, c echo.Context) {
 			err = c.JSON(httpErr.Code, ErrorResponse{Error: httpErr})
 		}
 		if err != nil {
-			logger.LogError(c.Request().Context(), err)
+			logging.FromContext(c.Request().Context()).Error("response error", zap.Error(err))
 		}
 	}
 }

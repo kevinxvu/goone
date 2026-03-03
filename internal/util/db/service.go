@@ -1,8 +1,8 @@
 package dbutil
 
 import (
+	"github.com/vuduongtp/go-core/pkg/logging"
 	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
-	"github.com/vuduongtp/go-logadapter"
 
 	_ "gorm.io/driver/postgres" // DB adapter
 	"gorm.io/gorm"
@@ -18,9 +18,9 @@ func New(dbType, dbPsn string, enableLog bool) (*gorm.DB, error) {
 	}
 
 	if enableLog {
-		db.Logger = logadapter.NewGormLogger().LogMode(logger.Info)
+		db.Logger = logging.NewGormLogger().LogMode(logger.Info)
 	} else {
-		db.Logger = logadapter.NewGormLogger().LogMode(logger.Silent)
+		db.Logger = logging.NewGormLogger().LogMode(logger.Silent)
 	}
 
 	return db, nil

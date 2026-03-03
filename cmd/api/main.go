@@ -12,11 +12,12 @@ import (
 	userdb "github.com/vuduongtp/go-core/internal/db/user"
 	"github.com/vuduongtp/go-core/internal/rbac"
 	dbutil "github.com/vuduongtp/go-core/internal/util/db"
+	"github.com/vuduongtp/go-core/pkg/logging"
 	"github.com/vuduongtp/go-core/pkg/server"
 	"github.com/vuduongtp/go-core/pkg/server/middleware/jwt"
 	"github.com/vuduongtp/go-core/pkg/util/crypter"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
 	swaggerutil "github.com/vuduongtp/go-core/pkg/util/swagger"
+	"go.uber.org/zap/zapcore"
 )
 
 //	@title			GoCore Example API
@@ -42,9 +43,15 @@ func main() {
 	cfg, err := config.Load()
 	checkErr(err)
 
-	logger.SetConfig(logger.Config{
-		IngnoredPaths: []string{"runtime/", "gorm.io/gorm/", "github.com/labstack/echo/"},
-		DefaultFields: map[string]interface{}{"env": "production"},
+	// Configure logging
+	logLevel := zapcore.InfoLevel
+	if cfg.Debug {
+		logLevel = zapcore.DebugLevel
+	}
+	logging.SetConfig(&logging.Config{
+		Level:      logLevel,
+		FilePath:   "logs/app.log",
+		TimeFormat: "2006-01-02 15:04:05",
 	})
 
 	db, err := dbutil.New(cfg.DbType, cfg.DbDsn, cfg.DbLog)
@@ -99,7 +106,6 @@ func main() {
 
 func checkErr(err error) {
 	if err != nil {
-		logger.Panic(err)
-		panic(err)
+		logging.DefaultLogger().Panic(err.Error())
 	}
 }
