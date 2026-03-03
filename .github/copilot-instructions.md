@@ -45,9 +45,81 @@ func New(db *gorm.DB, udb MyDB, cr Crypter) *User {
 }
 ```
 
-Wire dependencies in [cmd/api/main.go](cmd/api/main.go#L75-L95).
+### 2. Dependency Injection with Wire
 
-### 2. Database Repository Pattern
+This project uses **Google Wire** for compile-time dependency injection. All dependencies are wired in [internal/di/wire.go](internal/di/wire.go).
+
+**Wire Workflow:**
+
+1. **Define Provider Functions** in `internal/di/wire.go`:
+```go
+//go:build wireinject
+// +build wireinject
+
+package di
+
+import "github.com/google/wire"
+
+// Provider function - creates and returns a service
+func ProvideUserService(db *gorm.DB, userDB *userdb.DB, crypterSvc *crypter.Service) user.Service {
+    return user.New(db, userDB, crypterSvc)
+}
+
+// Injector function - tells Wire what to build
+func InitializeApplication() (*Application, error) {
+    wire.Build(
+        ProvideConfig,
+        ProvideDB,
+        ProvideUserDB,
+        ProvideCrypter,
+        ProvideUserService,
+        // ... other providers
+        wire.Struct(new(Application), "*"),
+    )
+    return nil, nil  // Wire replaces this
+}
+```
+
+2. **Generate Wire Code**:
+```bash
+# Using Makefile (recommended):
+make wire
+
+# Or run directly from project root:
+cd internal/di && wire
+
+# Or use GOFLAGS if using vendor:
+cd internal/di && GOFLAGS=-mod=mod wire
+```
+
+This creates `wire_gen.go` with the actual `InitializeApplication()` implementation.
+
+3. **Use in main.go**:
+```go
+import "github.com/vuduongtp/go-core/internal/di"
+
+func main() {
+    app, err := di.InitializeApplication()  // Wire-generated function
+    checkErr(err)
+    
+    // Use app.Config, app.DB, app.Server, etc.
+}
+```
+
+**Adding New Dependencies:**
+1. Create a `ProvideXXX()` function in `internal/di/wire.go`
+2. Add it to `wire.Build()` list
+3. Add field to `Application` struct if needed
+4. Run `make wire` to regenerate `wire_gen.go`
+
+**Important:** 
+- Provider functions are in `internal/di/wire.go` (build tag: `wireinject`)
+- Generated code is in `internal/di/wire_gen.go` (build tag: `!wireinject`)
+- Never edit `wire_gen.go` manually
+- Use concrete types in provider signatures for better type safety
+- See [internal/di/README.md](internal/di/README.md) for detailed Wire documentation
+
+### 3. Database Repository Pattern
 
 All repositories embed `*dbutil.DB` for CRUD operations. Add custom queries as methods:
 
@@ -72,7 +144,7 @@ func (d *DB) FindByUsername(ctx context.Context, db *gorm.DB, uname string) (*mo
 
 The `dbutil.DB` provides: `Create`, `View`, `List`, `Update`, `Delete`, `Exist`, `CreateInBatches`.
 
-### 3. Models MUST Use Custom Base
+### 4. Models MUST Use Custom Base
 
 **Never use `gorm.Model`**. All models must embed [internal/model/base.go](internal/model/base.go#L11-L20):
 
@@ -87,7 +159,7 @@ type Base struct {
 
 Why? This project uses `int` IDs instead of `uint` (gorm.Model default).
 
-### 4. Authentication Flow
+### 5. Authentication Flow
 
 JWT middleware extracts `model.AuthUser` from token. Access in handlers:
 ```go
@@ -101,13 +173,13 @@ Auth endpoints (`/login`, `/refresh-token`) are in [internal/api/auth](internal/
 
 Protected routes use `v1Router.Use(jwtSvc.MWFunc())` - see [cmd/api/main.go](cmd/api/main.go#L90-L95).
 
-### 5. Custom Validators
+### 6. Custom Validators
 
 Register custom validators in [pkg/server/validator.go](pkg/server/validator.go#L15-L20). Available:
 - `validate:"mobile"` - Phone number format `^(\+\d{1,3})?\s?\d{5,15}$`
 - `validate:"date"` - Date format `YYYY-MM-DD` or with `T00:00:00Z`
 
-### 6. Migrations
+### 7. Migrations
 
 Migration files use **gormigrate** in [internal/functions/migration/main.go](internal/functions/migration/main.go#L67-L101). 
 
@@ -115,7 +187,7 @@ Migration files use **gormigrate** in [internal/functions/migration/main.go](int
 
 For MySQL tables, use `tx.Set("gorm:table_options", defaultTableOpts)` to set `ENGINE=InnoDB ROW_FORMAT=DYNAMIC`.
 
-### 7. Logging
+### 8. Logging
 
 The project uses **Uber Zap** for structured logging with JSON format output.
 
@@ -172,6 +244,9 @@ make dev
 
 # Generate Swagger docs (required after API changes)
 make specs
+
+# Generate Wire DI code (after modifying internal/di/wire.go)
+make wire
 
 # Run migrations manually
 make migrate

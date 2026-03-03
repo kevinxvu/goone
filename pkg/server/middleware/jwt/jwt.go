@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vuduongtp/go-core/internal/model"
 	"github.com/vuduongtp/go-core/pkg/logging"
 	"github.com/vuduongtp/go-core/pkg/server"
 
@@ -93,5 +94,20 @@ func (j *Service) GenerateToken(claims map[string]interface{}, expire *time.Time
 	token := jwt.NewWithClaims(j.algo, jwt.MapClaims(claims))
 	tokenString, err := token.SignedString(j.key)
 
-	return tokenString, int(expire.Sub(time.Now()).Seconds()), err
+	return tokenString, int(time.Until(*expire).Seconds()), err
+}
+
+// User returns user data stored in jwt token
+func (j *Service) User(c echo.Context) *model.AuthUser {
+	id, _ := c.Get("id").(float64)
+	username, _ := c.Get("username").(string)
+	email, _ := c.Get("email").(string)
+	role, _ := c.Get("role").(string)
+
+	return &model.AuthUser{
+		ID:       int(id),
+		Username: username,
+		Email:    email,
+		Role:     role,
+	}
 }

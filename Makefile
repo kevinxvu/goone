@@ -30,6 +30,12 @@ migrate: ## Run database migrations
 migrate.undo: ## Undo the last database migration
 	go run cmd/migration/main.go --down
 
+wire: ## Generate wire dependency injection code
+	cd internal/di && GOFLAGS=-mod=mod wire
+
+wire.check: ## Check if wire code is up to date
+	cd internal/di && GOFLAGS=-mod=mod wire check
+
 seed: ## Run database seeder
 	echo "To be done!"
 
