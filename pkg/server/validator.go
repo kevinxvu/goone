@@ -1,9 +1,10 @@
 package server
 
 import (
-	"github.com/go-playground/validator/v10"
 	"regexp"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // CustomValidator holds custom validator

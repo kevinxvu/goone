@@ -1,9 +1,10 @@
 package mock
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http/httptest"
 	"time"
+
+	"github.com/labstack/echo/v4"
 )
 
 // TestTime is used for testing time fields

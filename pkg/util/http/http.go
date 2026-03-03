@@ -61,7 +61,7 @@ type ListRequest struct {
 	Order string `json:"o,omitempty" query:"o" enums:"ASC,DESC" default:"ASC"`
 	// JSON string of filter. E.g: {"field_name":"value"}
 	Filter string `json:"f,omitempty" query:"f"`
-} // @name ListRequest
+} //	@name	ListRequest
 
 // ReqListQuery parses url query string for listing request
 func ReqListQuery(c echo.Context) (*dbutil.ListQueryCondition, error) {

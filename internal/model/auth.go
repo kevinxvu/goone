@@ -10,7 +10,7 @@ type AuthToken struct {
 	TokenType    string `json:"token_type,omitempty"`
 	ExpiresIn    int    `json:"expires_in,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
-} // @name AuthToken
+} //	@name	AuthToken
 
 // AuthUser represents data stored in JWT token for user
 type AuthUser struct {

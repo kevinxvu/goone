@@ -19,8 +19,6 @@ provision: depends ## Provision dev environment
 	@$(MAKE) migrate
 
 dev: ## Bring up the server on dev environment with hot reload
-	docker-compose up -d
-	sh scripts/waitdb.sh
 	air
 
 remove: ## Bring down the server on dev environment, remove all docker related stuffs as well

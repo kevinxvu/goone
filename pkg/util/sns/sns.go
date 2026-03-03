@@ -2,9 +2,10 @@ package snsutil
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"strings"
 )
 
 // CreateApplication creates new platform application on SNS service

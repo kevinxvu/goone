@@ -17,4 +17,4 @@ type User struct {
 	RefreshToken string     `json:"-" gorm:"type:varchar(255);unique_index"`
 
 	Role string `json:"role" gorm:"varchar(255)"`
-} // @name User
+} //	@name	User
