@@ -17,3 +17,5 @@ coverage-all.out
 *.code-workspace
 /tmp
 /logs
+/.vs
+/.github

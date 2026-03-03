@@ -42,6 +42,11 @@ func main() {
 	cfg, err := config.Load()
 	checkErr(err)
 
+	logger.SetConfig(logger.Config{
+		IngnoredPaths: []string{"runtime/", "gorm.io/gorm/", "github.com/labstack/echo/"},
+		DefaultFields: map[string]interface{}{"env": "production"},
+	})
+
 	db, err := dbutil.New(cfg.DbType, cfg.DbDsn, cfg.DbLog)
 	checkErr(err)
 	// connection.Close() is not available for GORM 1.20.0
