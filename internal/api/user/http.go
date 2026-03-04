@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/vuduongtp/go-core/internal/model"
-	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
+	"github.com/vuduongtp/go-core/pkg/database"
 	httputil "github.com/vuduongtp/go-core/pkg/util/http"
 
 	"github.com/labstack/echo/v4"
@@ -22,7 +22,7 @@ type HTTP struct {
 type Service interface {
 	Create(context.Context, *model.AuthUser, CreationData) (*model.User, error)
 	View(context.Context, *model.AuthUser, int) (*model.User, error)
-	List(context.Context, *model.AuthUser, *dbutil.ListQueryCondition, *int64) ([]*model.User, error)
+	List(context.Context, *model.AuthUser, *database.ListQueryCondition, *int64) ([]*model.User, error)
 	Update(context.Context, *model.AuthUser, int, UpdateData) (*model.User, error)
 	Delete(context.Context, *model.AuthUser, int) error
 	Me(context.Context, *model.AuthUser) (*model.User, error)

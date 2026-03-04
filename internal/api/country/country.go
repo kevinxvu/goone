@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/vuduongtp/go-core/internal/model"
+	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server"
-	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
 	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
 )
 
@@ -45,7 +45,7 @@ func (s *Country) View(ctx context.Context, authUsr *model.AuthUser, id int) (*m
 }
 
 // List returns list of countrys
-func (s *Country) List(ctx context.Context, authUsr *model.AuthUser, lq *dbutil.ListQueryCondition, count *int64) ([]*model.Country, error) {
+func (s *Country) List(ctx context.Context, authUsr *model.AuthUser, lq *database.ListQueryCondition, count *int64) ([]*model.Country, error) {
 	var data []*model.Country
 	if err := s.cdb.List(ctx, s.db, &data, lq, count); err != nil {
 		return nil, server.NewHTTPInternalError("Error listing country").SetInternal(err)

@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server"
-	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
 
 	"github.com/imdatngo/gowhere"
 	"github.com/labstack/echo/v4"
@@ -64,13 +64,13 @@ type ListRequest struct {
 } //	@name	ListRequest
 
 // ReqListQuery parses url query string for listing request
-func ReqListQuery(c echo.Context) (*dbutil.ListQueryCondition, error) {
+func ReqListQuery(c echo.Context) (*database.ListQueryCondition, error) {
 	lr := &ListRequest{}
 	if err := c.Bind(lr); err != nil {
 		return nil, err
 	}
 
-	lq := &dbutil.ListQueryCondition{
+	lq := &database.ListQueryCondition{
 		Page:    lr.Page,
 		PerPage: lr.Limit,
 		Filter:  gowhere.WithConfig(gowhere.Config{Strict: true}),

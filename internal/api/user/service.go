@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/vuduongtp/go-core/internal/model"
-	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
+	"github.com/vuduongtp/go-core/pkg/database"
 
 	"gorm.io/gorm"
 )
@@ -23,7 +23,7 @@ type User struct {
 
 // MyDB represents user repository interface
 type MyDB interface {
-	dbutil.Intf
+	database.Intf
 	FindByUsername(context.Context, *gorm.DB, string) (*model.User, error)
 }
 

@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/vuduongtp/go-core/internal/model"
+	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server"
-	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
 	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
 )
 
@@ -52,7 +52,7 @@ func (s *User) View(ctx context.Context, authUsr *model.AuthUser, id int) (*mode
 }
 
 // List returns list of users
-func (s *User) List(ctx context.Context, authUsr *model.AuthUser, lq *dbutil.ListQueryCondition, count *int64) ([]*model.User, error) {
+func (s *User) List(ctx context.Context, authUsr *model.AuthUser, lq *database.ListQueryCondition, count *int64) ([]*model.User, error) {
 	var data []*model.User
 	if err := s.udb.List(ctx, s.db, &data, lq, count); err != nil {
 		return nil, server.NewHTTPInternalError("Error listing user").SetInternal(err)

@@ -11,14 +11,13 @@ import (
 	"github.com/vuduongtp/go-core/config"
 	"github.com/vuduongtp/go-core/internal/api/auth"
 	"github.com/vuduongtp/go-core/internal/api/country"
-	user2 "github.com/vuduongtp/go-core/internal/api/user"
-	"github.com/vuduongtp/go-core/internal/db/user"
+	"github.com/vuduongtp/go-core/internal/api/user"
 	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/internal/util/db"
+	"github.com/vuduongtp/go-core/internal/repository"
+	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server"
 	"github.com/vuduongtp/go-core/pkg/server/middleware/jwt"
 	"github.com/vuduongtp/go-core/pkg/util/crypter"
-	dbutil2 "github.com/vuduongtp/go-core/pkg/util/db"
 	"gorm.io/gorm"
 )
 
@@ -37,13 +36,13 @@ func InitializeApplication() (*Application, error) {
 	echo := ProvideServer(configuration)
 	service := ProvideJWT(configuration)
 	auth := ProvideAuth(service)
-	userDB := ProvideUserDB()
+	userRepository := ProvideUserDB()
 	jwt := ProvideAuthJWT(service)
 	crypterService := ProvideCrypter()
-	authService := ProvideAuthService(db, userDB, jwt, crypterService)
-	userService := ProvideUserService(db, userDB, crypterService)
-	dbutilDB := ProvideCountryDB()
-	countryService := ProvideCountryService(db, dbutilDB)
+	authService := ProvideAuthService(db, userRepository, jwt, crypterService)
+	userService := ProvideUserService(db, userRepository, crypterService)
+	countryRepository := ProvideCountryDB()
+	countryService := ProvideCountryService(db, countryRepository)
 	application := &Application{
 		Config:     configuration,
 		DB:         db,
@@ -66,17 +65,17 @@ func ProvideConfig() (*config.Configuration, error) {
 
 // ProvideDB initializes database connection
 func ProvideDB(cfg *config.Configuration) (*gorm.DB, error) {
-	return dbutil.New(cfg.DbType, cfg.DbDsn, cfg.DbLog)
+	return database.New(cfg.DbType, cfg.DbDsn, cfg.DbLog)
 }
 
 // ProvideUserDB creates user database repository
-func ProvideUserDB() *user.DB {
-	return user.NewDB()
+func ProvideUserDB() *repository.UserRepository {
+	return repository.NewUserRepository()
 }
 
 // ProvideCountryDB creates country database repository
-func ProvideCountryDB() *dbutil2.DB {
-	return country.NewDB()
+func ProvideCountryDB() *repository.CountryRepository {
+	return repository.NewCountryRepository()
 }
 
 // ProvideCrypter creates crypter service
@@ -100,17 +99,17 @@ func ProvideAuthJWT(jwtSvc *jwt.Service) auth.JWT {
 }
 
 // ProvideAuthService creates auth service
-func ProvideAuthService(db *gorm.DB, userDB *user.DB, jwtSvc auth.JWT, crypterSvc *crypter.Service) auth.Service {
+func ProvideAuthService(db *gorm.DB, userDB *repository.UserRepository, jwtSvc auth.JWT, crypterSvc *crypter.Service) auth.Service {
 	return auth.New(db, userDB, jwtSvc, crypterSvc)
 }
 
 // ProvideUserService creates user service
-func ProvideUserService(db *gorm.DB, userDB *user.DB, crypterSvc *crypter.Service) user2.Service {
-	return user2.New(db, userDB, crypterSvc)
+func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository, crypterSvc *crypter.Service) user.Service {
+	return user.New(db, userDB, crypterSvc)
 }
 
 // ProvideCountryService creates country service
-func ProvideCountryService(db *gorm.DB, countryDB *dbutil2.DB) country.Service {
+func ProvideCountryService(db *gorm.DB, countryDB *repository.CountryRepository) country.Service {
 	return country.New(db, countryDB)
 }
 
@@ -134,6 +133,6 @@ type Application struct {
 	JWT        *jwt.Service
 	Auth       model.Auth
 	AuthSvc    auth.Service
-	UserSvc    user2.Service
+	UserSvc    user.Service
 	CountrySvc country.Service
 }

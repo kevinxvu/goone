@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/vuduongtp/go-core/internal/model"
-	dbutil "github.com/vuduongtp/go-core/pkg/util/db"
+	"github.com/vuduongtp/go-core/pkg/database"
 
 	"gorm.io/gorm"
 )
@@ -30,7 +30,7 @@ type Auth struct {
 
 // UserDB represents user repository interface
 type UserDB interface {
-	dbutil.Intf
+	database.Intf
 	FindByUsername(context.Context, *gorm.DB, string) (*model.User, error)
 	FindByRefreshToken(context.Context, *gorm.DB, string) (*model.User, error)
 }

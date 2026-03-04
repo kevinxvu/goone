@@ -9,9 +9,10 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 **Layer Flow**: `cmd/` (entry points) → `internal/` (business logic) → `pkg/` (reusable utilities)
 - **cmd/api**: HTTP server initialization and dependency injection
 - **internal/api**: Domain modules (user, auth, country) - each has http.go, service.go, model
-- **internal/db**: Repository implementations with custom queries
+- **internal/repository**: Repository implementations with custom queries (flat structure)
+- **pkg/database**: Database connection, base repository with CRUD operations
 - **pkg/server**: Echo server setup, middleware, validators, error handling
-- **pkg/util**: Shared utilities (db, crypter, cfg, swagger, etc.)
+- **pkg/util**: Shared utilities (crypter, cfg, swagger, etc.)
 
 ## Code Patterns
 
@@ -61,7 +62,7 @@ package di
 import "github.com/google/wire"
 
 // Provider function - creates and returns a service
-func ProvideUserService(db *gorm.DB, userDB *userdb.DB, crypterSvc *crypter.Service) user.Service {
+func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository, crypterSvc *crypter.Service) user.Service {
     return user.New(db, userDB, crypterSvc)
 }
 
@@ -121,19 +122,27 @@ func main() {
 
 ### 3. Database Repository Pattern
 
-All repositories embed `*dbutil.DB` for CRUD operations. Add custom queries as methods:
+All repositories are in `internal/repository/` with a **flat structure**. Each repository uses `package repository` and embeds `*database.DB` for CRUD operations.
 
 ```go
-// internal/db/user/db.go
-type DB struct {
-    *dbutil.DB
+// internal/repository/user_repository.go
+package repository
+
+import (
+    "github.com/vuduongtp/go-core/internal/model"
+    "github.com/vuduongtp/go-core/pkg/database"
+)
+
+func NewUserRepository() *UserRepository {
+    return &UserRepository{database.NewDB(model.User{})}
 }
 
-func NewDB() *DB {
-    return &DB{dbutil.NewDB(model.User{})}
+type UserRepository struct {
+    *database.DB
 }
 
-func (d *DB) FindByUsername(ctx context.Context, db *gorm.DB, uname string) (*model.User, error) {
+// Custom query method
+func (d *UserRepository) FindByUsername(ctx context.Context, db *gorm.DB, uname string) (*model.User, error) {
     rec := new(model.User)
     if err := d.View(ctx, db, rec, "username = ?", uname); err != nil {
         return nil, err
@@ -142,7 +151,19 @@ func (d *DB) FindByUsername(ctx context.Context, db *gorm.DB, uname string) (*mo
 }
 ```
 
-The `dbutil.DB` provides: `Create`, `View`, `List`, `Update`, `Delete`, `Exist`, `CreateInBatches`.
+**Key Points:**
+- All repositories use `package repository` (flat structure in one folder)
+- Repository types are named with entity prefix: `UserRepository`, `CountryRepository`, `ProductRepository`
+- Factory methods: `NewUserRepository()`, `NewCountryRepository()`, etc.
+- Embed `*database.DB` which provides: `Create`, `View`, `List`, `Update`, `Delete`, `Exist`, `CreateInBatches`
+- Import from `pkg/database` (not `pkg/util/db`)
+
+**Adding New Repository:**
+1. Create `{entity}_repository.go` in `internal/repository/`
+2. Use `package repository`
+3. Name struct `{Entity}Repository` and factory `New{Entity}Repository()`
+4. Add to DI providers in `internal/di/wire.go`
+5. Run `make wire`
 
 ### 4. Models MUST Use Custom Base
 
@@ -283,10 +304,11 @@ For SQLite: Use file path like `./test.db`
 
 ## Common Utilities
 
-- **Package aliases**: Import as `dbutil`, `cfgutil`, `swaggerutil`, `httputil`, and `logging` (see existing imports)
+- **Package imports**: `database` (from pkg/database), `logging` (from pkg/logging), `repository` (from internal/repository)
 - **Error handling**: Use `server.NewHTTPError(statusCode, code, message)` for API errors
 - **Logging**: Use `logging.FromContext(ctx)` with zap fields, not printf-style logging in production code
 - **Context propagation**: Always pass `context.Context` through service and DB layers to preserve request tracking
+- **Repository access**: Import `"github.com/vuduongtp/go-core/internal/repository"` and use `repository.UserRepository`, `repository.CountryRepository`
 
 ## AWS Lambda Support
 

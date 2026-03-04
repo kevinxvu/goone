@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/vuduongtp/go-core/config"
-	dbutil "github.com/vuduongtp/go-core/internal/util/db"
+	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/util/crypter"
 	"github.com/vuduongtp/go-core/pkg/util/migration"
 
@@ -32,7 +32,7 @@ func Run() (respErr error) {
 		return err
 	}
 
-	db, err := dbutil.New(cfg.DbType, cfg.DbDsn, false)
+	db, err := database.New(cfg.DbType, cfg.DbDsn, false)
 	if err != nil {
 		return err
 	}
@@ -42,6 +42,9 @@ func Run() (respErr error) {
 	}
 
 	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
 	defer sqlDB.Close()
 
 	defer func() {
