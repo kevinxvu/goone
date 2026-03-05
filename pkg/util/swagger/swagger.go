@@ -19,4 +19,4 @@ type SwaggErrDetailsResp struct {
 // ListRequest holds data of listing request from react-admin
 type ListRequest struct {
 	request.ListRequest
-} //	@name	ListRequest
+}

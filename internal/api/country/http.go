@@ -135,7 +135,7 @@ func (h *HTTP) view(c echo.Context) error {
 // @Produce		json
 // @Tags			countries
 // @ID				countriesList
-// @Param			q				query		swagger.ListRequest	false	"QueryListRequest"
+// @Param			q				query		ListRequest	false	"QueryListRequest"
 // @Success		200				{object}	country.ListResp
 // @Failure		400				{object}	SwaggErrDetailsResp
 // @Failure		401				{object}	SwaggErrDetailsResp

@@ -18,8 +18,14 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 - **pkg/util**: Shared utilities:
   - **request**: HTTP request helpers (ReqID, ReqListQuery, etc.)
   - **crypter**: Password hashing, UID generation (static functions)
-  - **cfg**: Configuration loader
+  - **config**: Configuration loader (OS env vars have priority over .env files)
   - **swagger**: Swagger types and utilities
+  - **migration**: Database migration utilities using gormigrate
+- **pkg/aws**: AWS service wrappers:
+  - **email**: SES email service (send email, raw email with attachments)
+  - **s3**: S3 service (presigned URLs, file operations)
+  - **sns**: SNS push notification service (iOS APNS, Android FCM)
+  - **sqs**: SQS message queue service
 
 ## Code Patterns
 
@@ -223,11 +229,18 @@ type UserData struct {
 
 ### 7. Migrations
 
-Migration files use **gormigrate** in [internal/functions/migration/main.go](internal/functions/migration/main.go#L67-L101). 
+Migration files use **gormigrate** in [internal/functions/migration/main.go](internal/functions/migration/main.go#L67-L101). The migration utility is in [pkg/util/migration/gorm_migration.go](pkg/util/migration/gorm_migration.go).
 
 **Critical**: Copy model structs inside migration functions to prevent schema drift. Migration IDs are timestamps (e.g., `201905051012`).
 
 For MySQL tables, use `tx.Set("gorm:table_options", defaultTableOpts)` to set `ENGINE=InnoDB ROW_FORMAT=DYNAMIC`.
+
+**Usage:**
+```go
+import "github.com/vuduongtp/go-core/pkg/util/migration"
+
+migration.Run(db, migrations)
+```
 
 ### 8. Logging
 
@@ -308,9 +321,12 @@ Default credentials: username `superadmin`, password `superadmin123!@#`
 
 ## Configuration
 
-Environment variables are loaded via [pkg/util/cfg/cfg.go](pkg/util/cfg/cfg.go#L30-L50):
-1. `.env.local` (gitignored, for local overrides)
-2. `.env` (committed defaults)
+Environment variables are loaded via [pkg/util/config/config.go](pkg/util/config/config.go) with the following priority order:
+1. **OS environment variables** (highest priority - never overwritten)
+2. `.env.local` (gitignored, for local overrides)
+3. `.env` (committed defaults, lowest priority)
+
+**Important**: OS environment variables always take precedence. This allows deployment platforms (Docker, Kubernetes, cloud services) to override local .env files without conflicts.
 
 Key variables in [config/config.go](config/config.go#L11-L29): `STAGE`, `PORT`, `DB_TYPE`, `DB_DSN`, `JWT_SECRET`, `JWT_DURATION`, `JWT_ALGORITHM`, `ALLOW_ORIGINS`.
 
@@ -335,6 +351,14 @@ For SQLite: Use file path like `./test.db`
 - `request` - Import from `pkg/util/request` for HTTP request utilities
 - `binder` - Import from `pkg/server/binder` for validators and binders
 - `crypter` - Import from `pkg/util/crypter` for password hashing (static functions)
+- `config` - Import from `pkg/util/config` as `cfgutil` for configuration loading
+- `migration` - Import from `pkg/util/migration` for database migrations
+
+**AWS Service Packages:**
+- `email` - Import from `pkg/aws/email` for SES email service
+- `s3` - Import from `pkg/aws/s3` for S3 file storage
+- `sns` - Import from `pkg/aws/sns` as `snsutil` for push notifications
+- `sqs` - Import from `pkg/aws/sqs` as `sqsutil` for message queues
 
 **Error Handling:**
 ```go
@@ -383,4 +407,21 @@ import "github.com/vuduongtp/go-core/pkg/util/crypter"
 hashedPassword := crypter.HashPassword(plainPassword)
 isValid := crypter.CompareHashAndPassword(hashedPassword, plainPassword)
 uid := crypter.UID()
+```
+
+**Configuration Loading:**
+```go
+import cfgutil "github.com/vuduongtp/go-core/pkg/util/config"
+
+cfg := new(Configuration)
+if err := cfgutil.LoadConfig(cfg, appName, stage); err != nil {
+    return nil, err
+}
+// OS environment variables override .env files automatically
+```
+
+**Swagger Annotations:**
+When using `swagger.ListRequest` in Swagger comments, reference it as `ListRequest` (not `swagger.ListRequest`):
+```go
+// @Param q query ListRequest false "QueryListRequest"
 ```

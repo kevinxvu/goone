@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	cfgutil "github.com/vuduongtp/go-core/pkg/util/cfg"
+	cfgutil "github.com/vuduongtp/go-core/pkg/util/config"
 )
 
 // Configuration holds data necessery for configuring application
