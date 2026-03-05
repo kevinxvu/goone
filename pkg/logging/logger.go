@@ -45,9 +45,9 @@ func SetLevel(l zapcore.Level) {
 	conf.Level = l
 }
 
-// Component returns a logger with a component field for identification
-func Component(name string) *zap.Logger {
-	return DefaultLogger().With(zap.String("component", name))
+// Type returns a logger with a type field for identification
+func Type(name string) *zap.Logger {
+	return DefaultLogger().With(zap.String("type", name))
 }
 
 // NewLogger creates a new logger with dual output (console + file)
@@ -115,16 +115,12 @@ func FromContext(ctx context.Context) *zap.Logger {
 	return DefaultLogger()
 }
 
-// WithRequest creates a logger with request context fields
-func WithRequest(ctx context.Context, requestID, userID, endpoint string) *zap.Logger {
-	return FromContext(ctx).With(
-		zap.String("request_id", requestID),
-		zap.String("user_id", userID),
-		zap.String("endpoint", endpoint),
-	)
-}
-
 // ErrField is a helper to create an error field for logging
 func ErrField(err error) zap.Field {
 	return zap.Error(err)
+}
+
+// TypeField is a helper to create a type field for logging
+func TypeField(value string) zap.Field {
+	return zap.String("type", value)
 }

@@ -25,10 +25,29 @@ remove: ## Bring down the server on dev environment, remove all docker related s
 	docker-compose down -v --remove-orphans
 
 migrate: ## Run database migrations
-	go run cmd/migration/main.go
+	go run cmd/migration/main.go up
 
 migrate.undo: ## Undo the last database migration
-	go run cmd/migration/main.go --down
+	go run cmd/migration/main.go down
+
+migrate.status: ## Check migration status
+	go run cmd/migration/main.go status
+
+migrate.version: ## Show current migration version
+	go run cmd/migration/main.go version
+
+migrate.create: ## Create new migration file (usage: make migrate.create name=add_users_table)
+	@if [ -z "$(name)" ]; then \
+		echo "Error: name is required. Usage: make migrate.create name=add_users_table"; \
+		exit 1; \
+	fi
+	go run cmd/migration/main.go create $(name) sql
+
+migrate.reset: ## Rollback all migrations
+	go run cmd/migration/main.go reset
+
+migrate.redo: ## Redo the last migration
+	go run cmd/migration/main.go redo
 
 wire: ## Generate wire dependency injection code
 	cd internal/di && GOFLAGS=-mod=mod wire

@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var logger = logging.Component("migration")
+var logger = logging.Type("gorm")
 
 var migrateDown = flag.Bool("down", false, "Undo the last migration or undo til the specific --version")
 var migrateVersion = flag.String("version", "", "Exec the migrations up/down to the given migration that matches")

@@ -13,7 +13,6 @@ import (
 
 // GormLogger wraps zap.Logger to implement gorm's logger interface
 type GormLogger struct {
-	logger        *zap.Logger
 	logLevel      gormlogger.LogLevel
 	slowThreshold time.Duration
 }
@@ -21,7 +20,6 @@ type GormLogger struct {
 // NewGormLogger creates a new GORM logger using zap
 func NewGormLogger() *GormLogger {
 	return &GormLogger{
-		logger:        Component("gorm"),
 		logLevel:      gormlogger.Info,
 		slowThreshold: 200 * time.Millisecond,
 	}
@@ -37,21 +35,21 @@ func (l *GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 // Info logs info messages
 func (l *GormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.logLevel >= gormlogger.Info {
-		FromContext(ctx).Sugar().Infof(msg, data...)
+		FromContext(ctx).Sugar().With(TypeField("sql")).Infof(msg, data...)
 	}
 }
 
 // Warn logs warn messages
 func (l *GormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.logLevel >= gormlogger.Warn {
-		FromContext(ctx).Sugar().Warnf(msg, data...)
+		FromContext(ctx).Sugar().With(TypeField("sql")).Warnf(msg, data...)
 	}
 }
 
 // Error logs error messages
 func (l *GormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.logLevel >= gormlogger.Error {
-		FromContext(ctx).Sugar().Errorf(msg, data...)
+		FromContext(ctx).Sugar().With(TypeField("sql")).Errorf(msg, data...)
 	}
 }
 
@@ -68,7 +66,8 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql 
 	fields := []zap.Field{
 		zap.Duration("elapsed", elapsed),
 		zap.Int64("rows", rows),
-		zap.String("sql", sql),
+		zap.String("query", sql),
+		TypeField("sql"),
 	}
 
 	switch {

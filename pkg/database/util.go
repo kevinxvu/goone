@@ -55,3 +55,19 @@ func Transaction(db *gorm.DB, fn InTransaction) (err error) {
 	}()
 	return fn(tx)
 }
+
+// GetDriverAndDSN returns the appropriate driver name and DSN for database/sql
+// based on the database type. This is used for goose migrations which require
+// database/sql instead of GORM.
+func GetDriverAndDSN(dbType string, enableLog bool, dsn string) (driver string, connString string) {
+	switch dbType {
+	case "mysql":
+		return "mysql", dsn
+	case "postgres":
+		return "pgx", dsn
+	case "sqlite3", "sqlite":
+		return "sqlite3", dsn
+	default:
+		return dbType, dsn
+	}
+}

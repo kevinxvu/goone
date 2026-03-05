@@ -8,11 +8,13 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 
 **Layer Flow**: `cmd/` (entry points) → `internal/` (business logic) → `pkg/` (reusable utilities)
 - **cmd/api**: HTTP server initialization and dependency injection
+- **cmd/migration**: Database migration tool using Goose
 - **internal/api**: Layered API structure with clear separation of concerns:
   - **docs**: Swagger/OpenAPI generated documentation (docs.go, swagger.json, swagger.yaml)
   - **service/{module}**: Business logic, DTOs, interfaces (e.g., service/user/service.go)
   - **handler/{module}**: HTTP handlers, route registration (e.g., handler/user/handler.go)
   - **router**: Centralized route configuration (router/router.go)
+- **internal/migrations**: SQL migration files managed by Goose (YYYYMMDDHHMMSS_description.sql)
 - **internal/repository**: Repository implementations with custom queries (flat structure)
 - **pkg/database**: Database connection, base repository with CRUD operations
 - **pkg/server**: Echo server setup with subpackages:
@@ -24,7 +26,7 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
   - **crypter**: Password hashing, UID generation (static functions)
   - **config**: Configuration loader (OS env vars have priority over .env files)
   - **swagger**: Swagger types and utilities
-  - **migration**: Database migration utilities using gormigrate
+  - **migration**: Database migration utilities using Goose (SQL-based migrations)
 - **pkg/aws**: AWS service wrappers:
   - **email**: SES email service (send email, raw email with attachments)
   - **s3**: S3 service (presigned URLs, file operations)
@@ -352,17 +354,80 @@ type UserData struct {
 
 ### 7. Migrations
 
-Migration files use **gormigrate** in [internal/functions/migration/main.go](internal/functions/migration/main.go#L67-L101). The migration utility is in [pkg/util/migration/gorm_migration.go](pkg/util/migration/gorm_migration.go).
+Database migrations use **Goose** (https://github.com/pressly/goose) with SQL migration files. Migration files are stored in [internal/migrations/](internal/migrations/) and executed via [cmd/migration/main.go](cmd/migration/main.go).
 
-**Critical**: Copy model structs inside migration functions to prevent schema drift. Migration IDs are timestamps (e.g., `201905051012`).
+> **Note**: This project uses Goose for SQL-based migrations. The migration history is tracked in the `goose_db_version` table.
 
-For MySQL tables, use `tx.Set("gorm:table_options", defaultTableOpts)` to set `ENGINE=InnoDB ROW_FORMAT=DYNAMIC`.
+**Migration File Format:**
+- Naming: `YYYYMMDDHHMMSS_description.sql` (e.g., `20240101000001_create_users_table.sql`)
+- Each file must have `-- +goose Up` and `-- +goose Down` sections
+- Wrap DDL statements in `-- +goose StatementBegin` and `-- +goose StatementEnd`
 
-**Usage:**
+**Example Migration:**
+```sql
+-- +goose Up
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    INDEX idx_users_deleted_at (deleted_at)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS users;
+-- +goose StatementEnd
+```
+
+**Common Commands:**
+```bash
+# Run all pending migrations
+make migrate
+
+# Check migration status
+make migrate.status
+
+# Rollback last migration
+make migrate.undo
+
+# Create new migration
+make migrate.create name=add_users_table
+
+# Show current version
+make migrate.version
+
+# Advanced commands
+go run cmd/migration/main.go up-to 20240101000001  # Migrate to specific version
+go run cmd/migration/main.go reset                 # Rollback all migrations
+go run cmd/migration/main.go redo                  # Redo last migration
+```
+
+**Best Practices:**
+- Use `IF NOT EXISTS` and `IF EXISTS` for idempotent migrations
+- Always test both Up and Down migrations
+- Keep migrations small and focused (one logical change per file)
+- Never modify existing migration files - create new ones instead
+- For MySQL: Always use `ENGINE=InnoDB ROW_FORMAT=DYNAMIC` and `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+- Track migration history in `goose_db_version` table
+
+**Programmatic Usage:**
 ```go
-import "github.com/vuduongtp/go-core/pkg/util/migration"
+import (
+    "github.com/vuduongtp/go-core/pkg/util/migration"
+)
 
-migration.Run(db, migrations)
+cfg := &migration.GooseConfig{
+    Dir:       "internal/migrations",
+    TableName: "goose_db_version",
+    Dialect:   "mysql",
+    Verbose:   true,
+}
+err := migration.RunGoose(db, cfg)
 ```
 
 ### 8. Logging
@@ -426,11 +491,14 @@ make specs
 # Generate Wire DI code (after modifying internal/di/wire.go)
 make wire
 
-# Run migrations manually
-make migrate
-
-# Undo last migration
-make migrate.undo
+# Migration commands
+make migrate                          # Run all pending migrations
+make migrate.status                   # Check migration status
+make migrate.undo                     # Rollback last migration
+make migrate.version                  # Show current version
+make migrate.create name=xxx          # Create new migration
+make migrate.reset                    # Rollback all migrations
+make migrate.redo                     # Redo last migration
 
 # Run tests with coverage
 make test.cover
