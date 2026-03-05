@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/vuduongtp/go-core/docs"
-	_ "github.com/vuduongtp/go-core/docs"
+	"github.com/vuduongtp/go-core/internal/api/docs"
 	"github.com/vuduongtp/go-core/internal/api/router"
 	"github.com/vuduongtp/go-core/internal/di"
 	"github.com/vuduongtp/go-core/pkg/logging"

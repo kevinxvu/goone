@@ -9,6 +9,7 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 **Layer Flow**: `cmd/` (entry points) → `internal/` (business logic) → `pkg/` (reusable utilities)
 - **cmd/api**: HTTP server initialization and dependency injection
 - **internal/api**: Layered API structure with clear separation of concerns:
+  - **docs**: Swagger/OpenAPI generated documentation (docs.go, swagger.json, swagger.yaml)
   - **service/{module}**: Business logic, DTOs, interfaces (e.g., service/user/service.go)
   - **handler/{module}**: HTTP handlers, route registration (e.g., handler/user/handler.go)
   - **router**: Centralized route configuration (router/router.go)

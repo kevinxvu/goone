@@ -66,8 +66,7 @@ clean: ## Clean up the built & test files
 specs: ## Generate swagger specs
 	swag fmt -g /cmd/api/main.go
 	swag fmt -d ./internal/api
-	swag init --parseInternal --parseDependency --parseDepth 1 -g /cmd/api/main.go
-
+	swag init --parseInternal --parseDependency --parseDepth 1 -g /cmd/api/main.go -o ./internal/api/docs
 %: # prevent error for `up` target when passing arguments
 ifeq ($(filter up,$(MAKECMDGOALS)),up)
 	@:

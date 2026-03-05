@@ -12,9 +12,9 @@ coverage-all.out
 /server
 /vendor
 /swaggerui
-*.local
 /up.json
 *.code-workspace
 /tmp
 /logs
 /.vs
+.env
