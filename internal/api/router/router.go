@@ -1,6 +1,9 @@
 package router
 
 import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
 	"github.com/vuduongtp/go-core/internal/api/handler/auth"
 	"github.com/vuduongtp/go-core/internal/api/handler/country"
 	"github.com/vuduongtp/go-core/internal/api/handler/user"
@@ -9,6 +12,9 @@ import (
 
 // RegisterRoutes registers all API routes
 func RegisterRoutes(app *di.Application) {
+	// Health check endpoint (no authentication required)
+	app.Server.GET("/health", healthCheck)
+
 	// Auth routes (no JWT middleware)
 	auth.NewHTTP(app.AuthSvc, app.Server)
 
@@ -19,4 +25,12 @@ func RegisterRoutes(app *di.Application) {
 	// Register module routes on sub-groups
 	user.NewHTTP(app.UserSvc, app.Auth, v1Router.Group("/users"))
 	country.NewHTTP(app.CountrySvc, app.Auth, v1Router.Group("/countries"))
+}
+
+// healthCheck is a simple health check endpoint
+func healthCheck(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  "ok",
+		"message": "Server is running",
+	})
 }

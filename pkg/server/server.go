@@ -104,11 +104,11 @@ func Start(e *echo.Echo, isDevelopment bool) {
 	}()
 
 	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 10 seconds.
-	quit := make(chan os.Signal)
+	// a timeout of 30 seconds.
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		// Error from closing listeners, or context timeout:

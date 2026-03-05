@@ -502,11 +502,84 @@ make migrate.redo                     # Redo last migration
 
 # Run tests with coverage
 make test.cover
+
+# Docker commands
+make docker.build                     # Build Docker image
+make docker.run                       # Run container (requires DB at host.docker.internal:3306)
+make docker.stop                      # Stop and remove container
+make docker.logs                      # View container logs
+make docker.export                    # Export image to tar file
 ```
 
 The API runs on `http://localhost:8080`. Swagger docs at `/docs/index.html`.
 
 **Database**: MariaDB 12 runs in Docker on `localhost:3306` (credentials in `.env`).
+
+Default credentials: username `superadmin`, password `superadmin123!@#`
+
+## Docker Deployment
+
+The project includes Docker support with multi-stage builds for production deployment.
+
+**Files:**
+- [Dockerfile](Dockerfile) - Multi-stage build (builder + runtime)
+- [scripts/docker-entrypoint.sh](scripts/docker-entrypoint.sh) - Startup script with auto-migration
+- [.dockerignore](.dockerignore) - Optimize build context
+
+**Key Features:**
+- **Auto-migration on startup**: Runs `migrate up` before starting the app
+- **Health check endpoint**: `/health` for container health monitoring
+- **Multi-stage build**: Optimized image size (~20-30MB)
+- **Non-root user**: Runs as unprivileged user for security
+- **Minimal dependencies**: Only ca-certificates, tzdata, wget
+
+**Quick Start:**
+
+Build and run:
+```bash
+# Build image
+make docker.build
+
+# Run with external database (host.docker.internal)
+make docker.run
+
+# View logs
+make docker.logs
+
+# Stop container
+make docker.stop
+
+# Export image for deployment
+make docker.export
+```
+
+**Manual Docker Commands:**
+```bash
+# Build
+docker build -t gocore:latest .
+
+# Run with environment variables
+docker run -d \
+  --name gocore \
+  -p 8080:8080 \
+  -e DB_DSN="user:pass@tcp(dbhost:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local" \
+  gocore:latest
+
+# View logs
+docker logs -f gocore
+
+# Stop and remove
+docker stop gocore
+docker rm gocore
+```
+
+**Important Notes:**
+- Container automatically runs migrations on startup
+- Database must be accessible before starting container
+- Use `host.docker.internal` for host machine database on Mac/Windows
+- Use `172.17.0.1` for host machine database on Linux
+- Health check available at `http://localhost:8080/health`
+
 
 Default credentials: username `superadmin`, password `superadmin123!@#`
 

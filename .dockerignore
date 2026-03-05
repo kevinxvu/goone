@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Test and coverage
+*.test
+*.out
+coverage*.out
+
+# Build artifacts
+server
+tmp/
+logs/
+
+# Environment files (will copy .env explicitly)
+.env.local
+.env.*.local
+
+# Documentation
+*.md
+!README.md
+
+# Dependencies (will be downloaded in container)
+vendor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Air config (for hot reload in development)
+.air.toml
+
+# Scripts
+scripts/build*.sh
+scripts/test.sh
+scripts/waitdb.sh

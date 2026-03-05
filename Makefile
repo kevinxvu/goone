@@ -86,6 +86,27 @@ specs: ## Generate swagger specs
 	swag fmt -g /cmd/api/main.go
 	swag fmt -d ./internal/api
 	swag init --parseInternal --parseDependency --parseDepth 1 -g /cmd/api/main.go -o ./internal/api/docs
+
+docker.build: ## Build Docker image
+	docker build -t gocore:latest .
+
+docker.run: ## Run Docker container (requires running database)
+	docker run -d \
+		--name gocore \
+		-p 8080:8080 \
+		-e DB_DSN="goone:goone123@tcp(host.docker.internal:3306)/goone?charset=utf8mb4&parseTime=True&loc=Local" \
+		gocore:latest
+
+docker.stop: ## Stop Docker container
+	docker stop gocore || true
+	docker rm gocore || true
+
+docker.logs: ## View Docker container logs
+	docker logs -f gocore
+
+docker.export: ## Export Docker image to tar file
+	docker save gocore:latest -o gocore-latest.tar
+
 %: # prevent error for `up` target when passing arguments
 ifeq ($(filter up,$(MAKECMDGOALS)),up)
 	@:
