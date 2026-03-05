@@ -1,42 +1,23 @@
 package auth
 
 import (
-	"context"
 	"net/http"
 
-	"github.com/vuduongtp/go-core/internal/model"
-
 	"github.com/labstack/echo/v4"
+	"github.com/vuduongtp/go-core/internal/api/service/auth"
 )
 
 // HTTP represents auth http service
 type HTTP struct {
-	svc Service
-}
-
-// Service represents auth service interface
-type Service interface {
-	Authenticate(context.Context, Credentials) (*model.AuthToken, error)
-	RefreshToken(context.Context, RefreshTokenData) (*model.AuthToken, error)
+	svc auth.Service
 }
 
 // NewHTTP creates new auth http service
-func NewHTTP(svc Service, e *echo.Echo) {
+func NewHTTP(svc auth.Service, e *echo.Echo) {
 	h := HTTP{svc}
 
 	e.POST("/login", h.login)
 	e.POST("/refresh-token", h.refreshToken)
-}
-
-// Credentials represents login request data
-type Credentials struct {
-	Username string `json:"username" validate:"required" example:"superadmin"`
-	Password string `json:"password" validate:"required" example:"superadmin123!@#"`
-}
-
-// RefreshTokenData represents refresh token request data
-type RefreshTokenData struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
 // @Summary		Logs in user by username and password
@@ -46,12 +27,12 @@ type RefreshTokenData struct {
 // @Tags			auth
 // @ID				authLogin
 // @Param			request	body		auth.Credentials	true	"Credentials"
-// @Success		200		{object}	model.AuthToken
+// @Success		200		{object}	AuthToken
 // @Failure		401		{object}	SwaggErrDetailsResp
 // @Failure		500		{object}	SwaggErrDetailsResp
 // @Router			/login [post]
 func (h *HTTP) login(c echo.Context) error {
-	r := Credentials{}
+	r := auth.Credentials{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}
@@ -70,12 +51,12 @@ func (h *HTTP) login(c echo.Context) error {
 // @Tags			auth
 // @ID				authRefreshToken
 // @Param			request	body		auth.RefreshTokenData	true	"RefreshTokenData"
-// @Success		200		{object}	model.AuthToken
+// @Success		200		{object}	AuthToken
 // @Failure		401		{object}	SwaggErrDetailsResp
 // @Failure		500		{object}	SwaggErrDetailsResp
 // @Router			/refresh-token [post]
 func (h *HTTP) refreshToken(c echo.Context) error {
-	r := RefreshTokenData{}
+	r := auth.RefreshTokenData{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}

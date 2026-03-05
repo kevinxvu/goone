@@ -8,7 +8,10 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 
 **Layer Flow**: `cmd/` (entry points) → `internal/` (business logic) → `pkg/` (reusable utilities)
 - **cmd/api**: HTTP server initialization and dependency injection
-- **internal/api**: Domain modules (user, auth, country) - each has http.go, service.go, model
+- **internal/api**: Layered API structure with clear separation of concerns:
+  - **service/{module}**: Business logic, DTOs, interfaces (e.g., service/user/service.go)
+  - **handler/{module}**: HTTP handlers, route registration (e.g., handler/user/handler.go)
+  - **router**: Centralized route configuration (router/router.go)
 - **internal/repository**: Repository implementations with custom queries (flat structure)
 - **pkg/database**: Database connection, base repository with CRUD operations
 - **pkg/server**: Echo server setup with subpackages:
@@ -31,40 +34,142 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 
 ### 1. Creating New API Modules
 
-Follow the **HTTP → Service → DB** pattern. Example from `internal/api/user/`:
+Follow the **Service → Handler → Router** pattern. The architecture uses a layered approach with clear separation:
 
+**Service Layer** (`internal/api/service/{module}/service.go`):
 ```go
-// http.go - Define HTTP layer and routes
+package user
+
+import (
+    "context"
+    "github.com/vuduongtp/go-core/internal/model"
+    "github.com/vuduongtp/go-core/pkg/database"
+    "gorm.io/gorm"
+)
+
+// Factory function
+func New(db *gorm.DB, udb MyDB) *User {
+    return &User{db: db, udb: udb}
+}
+
+// Service struct
+type User struct {
+    db  *gorm.DB
+    udb MyDB
+}
+
+// Repository interface (consumed by service)
+type MyDB interface {
+    database.Intf
+    FindByUsername(context.Context, *gorm.DB, string) (*model.User, error)
+}
+
+// Service interface (exposed to handler)
+type Service interface {
+    Create(context.Context, *model.AuthUser, CreationData) (*model.User, error)
+    View(context.Context, *model.AuthUser, int) (*model.User, error)
+    // ... more methods
+}
+
+// DTOs
+type CreationData struct {
+    Username string `json:"username" validate:"required,min=3"`
+    Password string `json:"password" validate:"required,min=8"`
+    // ... more fields
+}
+
+type UpdateData struct {
+    Username *string `json:"username,omitempty"`
+    // ... more fields
+}
+
+// Custom errors
+var (
+    ErrUserNotFound = apperr.NewHTTPError(http.StatusBadRequest, "USER_NOTFOUND", "User not found")
+)
+
+// Business logic methods
+func (s *User) Create(ctx context.Context, authUsr *model.AuthUser, data CreationData) (*model.User, error) {
+    hashedPassword := crypter.HashPassword(data.Password)
+    rec := &model.User{
+        Username: data.Username,
+        Password: hashedPassword,
+    }
+    if err := s.udb.Create(ctx, s.db, rec); err != nil {
+        return nil, apperr.NewHTTPInternalError("Error creating user").SetInternal(err)
+    }
+    return rec, nil
+}
+```
+
+**Handler Layer** (`internal/api/handler/{module}/handler.go`):
+```go
+package user
+
+import (
+    "net/http"
+    "github.com/labstack/echo/v4"
+    "github.com/vuduongtp/go-core/internal/api/service/user"
+    "github.com/vuduongtp/go-core/internal/model"
+)
+
+// HTTP struct
 type HTTP struct {
-    svc  Service
+    svc  user.Service
     auth model.Auth
 }
 
-func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
+// Route registration
+func NewHTTP(svc user.Service, auth model.Auth, eg *echo.Group) {
     h := HTTP{svc, auth}
     eg.POST("", h.create)
     eg.GET("/:id", h.view)
     // ... more routes
 }
 
-// service.go - Business logic
-type User struct {
-    db   *gorm.DB
-    udb  MyDB
-}
-
-func New(db *gorm.DB, udb MyDB) *User {
-    return &User{db: db, udb: udb}
-}
-
-// Use crypter static functions directly
-import "github.com/vuduongtp/go-core/pkg/util/crypter"
-
-func (s *User) Create(ctx context.Context, data CreationData) (*model.User, error) {
-    hashedPassword := crypter.HashPassword(data.Password)
-    // ... rest of the code
+// Handler methods
+func (h *HTTP) create(c echo.Context) error {
+    r := user.CreationData{}
+    if err := c.Bind(&r); err != nil {
+        return err
+    }
+    resp, err := h.svc.Create(c.Request().Context(), h.auth.User(c), r)
+    if err != nil {
+        return err
+    }
+    return c.JSON(http.StatusOK, resp)
 }
 ```
+
+**Router Layer** (`internal/api/router/router.go`):
+```go
+package router
+
+import (
+    "github.com/vuduongtp/go-core/internal/api/handler/auth"
+    "github.com/vuduongtp/go-core/internal/api/handler/user"
+    "github.com/vuduongtp/go-core/internal/di"
+)
+
+func RegisterRoutes(app *di.Application) {
+    // Auth routes (no JWT middleware)
+    auth.NewHTTP(app.AuthSvc, app.Server)
+    
+    // Protected v1 routes with JWT middleware
+    v1Router := app.Server.Group("/v1")
+    v1Router.Use(app.JWT.MWFunc())
+    
+    // Register module routes
+    user.NewHTTP(app.UserSvc, app.Auth, v1Router.Group("/users"))
+}
+```
+
+**Adding a New Module:**
+1. Create `internal/api/service/{module}/service.go` with DTOs, interfaces, and business logic
+2. Create `internal/api/handler/{module}/handler.go` with HTTP handlers
+3. Add provider functions to `internal/di/wire.go`
+4. Register routes in `internal/api/router/router.go`
+5. Run `make wire` to regenerate DI code
 
 ### 2. Dependency Injection with Wire
 
@@ -79,11 +184,28 @@ This project uses **Google Wire** for compile-time dependency injection. All dep
 
 package di
 
-import "github.com/google/wire"
+import (
+    "github.com/google/wire"
+    userSvc "github.com/vuduongtp/go-core/internal/api/service/user"
+    authSvc "github.com/vuduongtp/go-core/internal/api/service/auth"
+    "github.com/vuduongtp/go-core/internal/repository"
+)
 
 // Provider function - creates and returns a service
-func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository) user.Service {
-    return user.New(db, userDB)
+func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository) userSvc.Service {
+    return userSvc.New(db, userDB)
+}
+
+// Application struct
+type Application struct {
+    Config     *config.Configuration
+    DB         *gorm.DB
+    Server     *echo.Echo
+    JWT        *jwt.Service
+    Auth       model.Auth
+    AuthSvc    authSvc.Service
+    UserSvc    userSvc.Service
+    CountrySvc countrySvc.Service
 }
 
 // Injector function - tells Wire what to build
@@ -209,9 +331,9 @@ func (h *HTTP) me(c echo.Context) error {
 }
 ```
 
-Auth endpoints (`/login`, `/refresh-token`) are in [internal/api/auth](internal/api/auth) - no JWT required.
+Auth endpoints (`/login`, `/refresh-token`) are in [internal/api/service/auth](internal/api/service/auth) - no JWT required.
 
-Protected routes use `v1Router.Use(jwtSvc.MWFunc())` - see [cmd/api/main.go](cmd/api/main.go#L90-L95).
+Protected routes use `v1Router.Use(app.JWT.MWFunc())` - see [internal/api/router/router.go](internal/api/router/router.go).
 
 ### 6. Custom Validators
 
@@ -354,6 +476,13 @@ For SQLite: Use file path like `./test.db`
 - `config` - Import from `pkg/util/config` as `cfgutil` for configuration loading
 - `migration` - Import from `pkg/util/migration` for database migrations
 
+**API Layer Packages:**
+- `service` - Import service packages with aliases: `userSvc "github.com/vuduongtp/go-core/internal/api/service/user"`
+- `handler` - Import handler packages: `"github.com/vuduongtp/go-core/internal/api/handler/user"`
+- `router` - Import router: `"github.com/vuduongtp/go-core/internal/api/router"`
+- DTOs are in service packages: Use `user.CreationData`, `user.UpdateData`, etc.
+- Service interfaces: Use `user.Service`, `auth.Service`, etc.
+
 **AWS Service Packages:**
 - `email` - Import from `pkg/aws/email` for SES email service
 - `s3` - Import from `pkg/aws/s3` for S3 file storage
@@ -424,4 +553,21 @@ if err := cfgutil.LoadConfig(cfg, appName, stage); err != nil {
 When using `swagger.ListRequest` in Swagger comments, reference it as `ListRequest` (not `swagger.ListRequest`):
 ```go
 // @Param q query ListRequest false "QueryListRequest"
+```
+
+For model types with `@name` annotations (User, AuthToken, Country), use the short name without the `model.` prefix:
+```go
+// Correct:
+// @Success 200 {object} User
+// @Success 200 {object} AuthToken
+
+// Incorrect:
+// @Success 200 {object} model.User  
+// @Success 200 {object} model.AuthToken
+```
+
+For service DTOs, use the qualified package name:
+```go
+// @Param request body user.CreationData true "CreationData"
+// @Success 200 {object} user.ListResp
 ```

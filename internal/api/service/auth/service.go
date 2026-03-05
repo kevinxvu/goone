@@ -7,9 +7,57 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/vuduongtp/go-core/internal/model"
+	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server/apperr"
 	"github.com/vuduongtp/go-core/pkg/util/crypter"
+
+	"gorm.io/gorm"
 )
+
+// New creates new auth service
+func New(db *gorm.DB, udb UserDB, jwt JWT) *Auth {
+	return &Auth{
+		db:  db,
+		udb: udb,
+		jwt: jwt,
+	}
+}
+
+// Auth represents auth application service
+type Auth struct {
+	db  *gorm.DB
+	udb UserDB
+	jwt JWT
+}
+
+// UserDB represents user repository interface
+type UserDB interface {
+	database.Intf
+	FindByUsername(context.Context, *gorm.DB, string) (*model.User, error)
+	FindByRefreshToken(context.Context, *gorm.DB, string) (*model.User, error)
+}
+
+// JWT represents token generator (jwt) interface
+type JWT interface {
+	GenerateToken(map[string]interface{}, *time.Time) (string, int, error)
+}
+
+// Service represents auth service interface
+type Service interface {
+	Authenticate(context.Context, Credentials) (*model.AuthToken, error)
+	RefreshToken(context.Context, RefreshTokenData) (*model.AuthToken, error)
+}
+
+// Credentials represents login request data
+type Credentials struct {
+	Username string `json:"username" validate:"required" example:"superadmin"`
+	Password string `json:"password" validate:"required" example:"superadmin123!@#"`
+}
+
+// RefreshTokenData represents refresh token request data
+type RefreshTokenData struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
 
 // Custom errors
 var (

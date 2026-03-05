@@ -8,7 +8,60 @@ import (
 	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server/apperr"
 	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
+
+	"gorm.io/gorm"
 )
+
+// New creates new country application service
+func New(db *gorm.DB, cdb database.Intf) *Country {
+	return &Country{
+		db:  db,
+		cdb: cdb,
+	}
+}
+
+// Country represents country application service
+type Country struct {
+	db  *gorm.DB
+	cdb database.Intf
+}
+
+// Service represents country application interface
+type Service interface {
+	Create(context.Context, *model.AuthUser, CreationData) (*model.Country, error)
+	View(context.Context, *model.AuthUser, int) (*model.Country, error)
+	List(context.Context, *model.AuthUser, *database.ListQueryCondition, *int64) ([]*model.Country, error)
+	Update(context.Context, *model.AuthUser, int, UpdateData) (*model.Country, error)
+	Delete(context.Context, *model.AuthUser, int) error
+}
+
+// CreationData contains country data from json request
+type CreationData struct {
+	// example: Vietnam
+	Name string `json:"name" validate:"required,min=3"`
+	// example: vn
+	Code string `json:"code" validate:"required,min=2,max=10"`
+	// example: +84
+	PhoneCode string `json:"phone_code" validate:"required,min=2,max=10"`
+}
+
+// UpdateData contains country data from json request
+type UpdateData struct {
+	// example: Vietnam
+	Name *string `json:"name,omitempty" validate:"omitempty,min=3"`
+	// example: vn
+	Code *string `json:"code,omitempty" validate:"omitempty,min=2,max=10"`
+	// example: +84
+	PhoneCode *string `json:"phone_code,omitempty" validate:"omitempty,min=2,max=10"`
+}
+
+// ListResp contains list of paginated countries and total numbers of countries
+type ListResp struct {
+	// example: [{"id": 1, "created_at": "2020-01-14T10:03:41Z", "updated_at": "2020-01-14T10:03:41Z", "name": "Singapore", "code": "SG", "phone_code": "+65"}]
+	Data []*model.Country `json:"data"`
+	// example: 1
+	TotalCount int64 `json:"total_count"`
+}
 
 // Custom errors
 var (

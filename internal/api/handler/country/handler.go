@@ -1,36 +1,25 @@
 package country
 
 import (
-	"context"
 	"net/http"
 	"regexp"
 	"strings"
 
+	"github.com/labstack/echo/v4"
+	"github.com/vuduongtp/go-core/internal/api/service/country"
 	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server/apperr"
 	"github.com/vuduongtp/go-core/pkg/util/request"
-
-	"github.com/labstack/echo/v4"
 )
 
 // HTTP represents country http service
 type HTTP struct {
-	svc  Service
+	svc  country.Service
 	auth model.Auth
 }
 
-// Service represents country application interface
-type Service interface {
-	Create(context.Context, *model.AuthUser, CreationData) (*model.Country, error)
-	View(context.Context, *model.AuthUser, int) (*model.Country, error)
-	List(context.Context, *model.AuthUser, *database.ListQueryCondition, *int64) ([]*model.Country, error)
-	Update(context.Context, *model.AuthUser, int, UpdateData) (*model.Country, error)
-	Delete(context.Context, *model.AuthUser, int) error
-}
-
 // NewHTTP creates new country http service
-func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
+func NewHTTP(svc country.Service, auth model.Auth, eg *echo.Group) {
 	h := HTTP{svc, auth}
 
 	eg.POST("", h.create)
@@ -38,34 +27,6 @@ func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
 	eg.GET("", h.list)
 	eg.PATCH("/:id", h.update)
 	eg.DELETE("/:id", h.delete)
-}
-
-// CreationData contains country data from json request
-type CreationData struct {
-	// example: Vietnam
-	Name string `json:"name" validate:"required,min=3"`
-	// example: vn
-	Code string `json:"code" validate:"required,min=2,max=10"`
-	// example: +84
-	PhoneCode string `json:"phone_code" validate:"required,min=2,max=10"`
-}
-
-// UpdateData contains country data from json request
-type UpdateData struct {
-	// example: Vietnam
-	Name *string `json:"name,omitempty" validate:"omitempty,min=3"`
-	// example: vn
-	Code *string `json:"code,omitempty" validate:"omitempty,min=2,max=10"`
-	// example: +84
-	PhoneCode *string `json:"phone_code,omitempty" validate:"omitempty,min=2,max=10"`
-}
-
-// ListResp contains list of paginated countries and total numbers of countries
-type ListResp struct {
-	// example: [{"id": 1, "created_at": "2020-01-14T10:03:41Z", "updated_at": "2020-01-14T10:03:41Z", "name": "Singapore", "code": "SG", "phone_code": "+65"}]
-	Data []*model.Country `json:"data"`
-	// example: 1
-	TotalCount int64 `json:"total_count"`
 }
 
 // @Security		BearerToken
@@ -76,13 +37,13 @@ type ListResp struct {
 // @Tags			countries
 // @ID				countriesCreate
 // @Param			request			body		country.CreationData	true	"CreationData"
-// @Success		200				{object}	model.AuthToken
+// @Success		200				{object}	model.Country
 // @Failure		401				{object}	SwaggErrDetailsResp
 // @Failure		403				{object}	SwaggErrDetailsResp
 // @Failure		500				{object}	SwaggErrDetailsResp
 // @Router			/v1/countries	[post]
 func (h *HTTP) create(c echo.Context) error {
-	r := CreationData{}
+	r := country.CreationData{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}
@@ -153,7 +114,7 @@ func (h *HTTP) list(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, ListResp{resp, count})
+	return c.JSON(http.StatusOK, country.ListResp{Data: resp, TotalCount: count})
 }
 
 // @Security		BearerToken
@@ -177,7 +138,7 @@ func (h *HTTP) update(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	r := UpdateData{}
+	r := country.UpdateData{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}

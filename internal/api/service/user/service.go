@@ -9,7 +9,72 @@ import (
 	"github.com/vuduongtp/go-core/pkg/server/apperr"
 	"github.com/vuduongtp/go-core/pkg/util/crypter"
 	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
+
+	"gorm.io/gorm"
 )
+
+// New creates new user application service
+func New(db *gorm.DB, udb MyDB) *User {
+	return &User{db: db, udb: udb}
+}
+
+// User represents user application service
+type User struct {
+	db  *gorm.DB
+	udb MyDB
+}
+
+// MyDB represents user repository interface
+type MyDB interface {
+	database.Intf
+	FindByUsername(context.Context, *gorm.DB, string) (*model.User, error)
+}
+
+// Service represents user application interface
+type Service interface {
+	Create(context.Context, *model.AuthUser, CreationData) (*model.User, error)
+	View(context.Context, *model.AuthUser, int) (*model.User, error)
+	List(context.Context, *model.AuthUser, *database.ListQueryCondition, *int64) ([]*model.User, error)
+	Update(context.Context, *model.AuthUser, int, UpdateData) (*model.User, error)
+	Delete(context.Context, *model.AuthUser, int) error
+	Me(context.Context, *model.AuthUser) (*model.User, error)
+	ChangePassword(context.Context, *model.AuthUser, PasswordChangeData) error
+}
+
+// CreationData contains user data from json request
+type CreationData struct {
+	Username  string `json:"username" validate:"required,min=3"`
+	Password  string `json:"password" validate:"required,min=8"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+	Mobile    string `json:"mobile" validate:"required,mobile"`
+	Role      string `json:"role" validate:"required"`
+	Blocked   bool   `json:"blocked"`
+}
+
+// UpdateData contains user data from json request
+type UpdateData struct {
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+	Email     *string `json:"email,omitempty" validate:"omitempty,email"`
+	Mobile    *string `json:"mobile,omitempty" validate:"omitempty,mobile"`
+	Role      *string `json:"role,omitempty"`
+	Blocked   *bool   `json:"blocked,omitempty"`
+}
+
+// PasswordChangeData contains password change request
+type PasswordChangeData struct {
+	OldPassword        string `json:"old_password" validate:"required"`
+	NewPassword        string `json:"new_password" validate:"required,min=8"`
+	NewPasswordConfirm string `json:"new_password_confirm" validate:"required,eqfield=NewPassword"`
+}
+
+// ListResp contains list of users and current page number response
+type ListResp struct {
+	Data       []*model.User `json:"data"`
+	TotalCount int64         `json:"total_count"`
+}
 
 // Custom errors
 var (

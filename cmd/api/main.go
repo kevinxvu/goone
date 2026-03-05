@@ -5,9 +5,7 @@ import (
 
 	"github.com/vuduongtp/go-core/docs"
 	_ "github.com/vuduongtp/go-core/docs"
-	"github.com/vuduongtp/go-core/internal/api/auth"
-	"github.com/vuduongtp/go-core/internal/api/country"
-	"github.com/vuduongtp/go-core/internal/api/user"
+	"github.com/vuduongtp/go-core/internal/api/router"
 	"github.com/vuduongtp/go-core/internal/di"
 	"github.com/vuduongtp/go-core/pkg/logging"
 	"github.com/vuduongtp/go-core/pkg/server"
@@ -62,15 +60,8 @@ func main() {
 		e.GET(fmt.Sprintf("/%s/*", app.Config.APIDocsPath), swaggerutil.WrapHandler)
 	}
 
-	// Initialize root API
-	auth.NewHTTP(app.AuthSvc, app.Server)
-
-	// Initialize v1 API
-	v1Router := app.Server.Group("/v1")
-	v1Router.Use(app.JWT.MWFunc())
-
-	user.NewHTTP(app.UserSvc, app.Auth, v1Router.Group("/users"))
-	country.NewHTTP(app.CountrySvc, app.Auth, v1Router.Group("/countries"))
+	// Register all API routes
+	router.RegisterRoutes(app)
 
 	// Start the HTTP server
 	server.Start(app.Server, app.Config.Stage == "development")

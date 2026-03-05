@@ -1,36 +1,23 @@
 package user
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/util/request"
-
 	"github.com/labstack/echo/v4"
+	"github.com/vuduongtp/go-core/internal/api/service/user"
+	"github.com/vuduongtp/go-core/internal/model"
+	"github.com/vuduongtp/go-core/pkg/util/request"
 )
 
 // HTTP represents user http service
 type HTTP struct {
-	svc  Service
+	svc  user.Service
 	auth model.Auth
 }
 
-// Service represents user application interface
-type Service interface {
-	Create(context.Context, *model.AuthUser, CreationData) (*model.User, error)
-	View(context.Context, *model.AuthUser, int) (*model.User, error)
-	List(context.Context, *model.AuthUser, *database.ListQueryCondition, *int64) ([]*model.User, error)
-	Update(context.Context, *model.AuthUser, int, UpdateData) (*model.User, error)
-	Delete(context.Context, *model.AuthUser, int) error
-	Me(context.Context, *model.AuthUser) (*model.User, error)
-	ChangePassword(context.Context, *model.AuthUser, PasswordChangeData) error
-}
-
 // NewHTTP creates new user http service
-func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
+func NewHTTP(svc user.Service, auth model.Auth, eg *echo.Group) {
 	h := HTTP{svc, auth}
 
 	eg.POST("", h.create)
@@ -40,41 +27,6 @@ func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
 	eg.DELETE("/:id", h.delete)
 	eg.GET("/me", h.me)
 	eg.PATCH("/me/password", h.changePassword)
-}
-
-// CreationData contains user data from json request
-type CreationData struct {
-	Username  string `json:"username" validate:"required,min=3"`
-	Password  string `json:"password" validate:"required,min=8"`
-	FirstName string `json:"first_name" validate:"required"`
-	LastName  string `json:"last_name" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-	Mobile    string `json:"mobile" validate:"required,mobile"`
-	Role      string `json:"role" validate:"required"`
-	Blocked   bool   `json:"blocked"`
-}
-
-// UpdateData contains user data from json request
-type UpdateData struct {
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-	Email     *string `json:"email,omitempty" validate:"omitempty,email"`
-	Mobile    *string `json:"mobile,omitempty" validate:"omitempty,mobile"`
-	Role      *string `json:"role,omitempty"`
-	Blocked   *bool   `json:"blocked,omitempty"`
-}
-
-// PasswordChangeData contains password change request
-type PasswordChangeData struct {
-	OldPassword        string `json:"old_password" validate:"required"`
-	NewPassword        string `json:"new_password" validate:"required,min=8"`
-	NewPasswordConfirm string `json:"new_password_confirm" validate:"required,eqfield=NewPassword"`
-}
-
-// ListResp contains list of users and current page number response
-type ListResp struct {
-	Data       []*model.User `json:"data"`
-	TotalCount int64         `json:"total_count"`
 }
 
 // @Security		BearerToken
@@ -92,7 +44,7 @@ type ListResp struct {
 // @Failure		500			{object}	SwaggErrDetailsResp
 // @Router			/v1/users	[post]
 func (h *HTTP) create(c echo.Context) error {
-	r := CreationData{}
+	r := user.CreationData{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}
@@ -163,7 +115,7 @@ func (h *HTTP) list(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, ListResp{resp, count})
+	return c.JSON(http.StatusOK, user.ListResp{Data: resp, TotalCount: count})
 }
 
 // @Security		BearerToken
@@ -187,7 +139,7 @@ func (h *HTTP) update(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	r := UpdateData{}
+	r := user.UpdateData{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}
@@ -271,7 +223,7 @@ func (h *HTTP) me(c echo.Context) error {
 // @Failure		500					{object}	SwaggErrDetailsResp
 // @Router			/v1/users/password	[get]
 func (h *HTTP) changePassword(c echo.Context) error {
-	r := PasswordChangeData{}
+	r := user.PasswordChangeData{}
 	if err := c.Bind(&r); err != nil {
 		return err
 	}

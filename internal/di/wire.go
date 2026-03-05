@@ -7,9 +7,9 @@ import (
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/vuduongtp/go-core/config"
-	"github.com/vuduongtp/go-core/internal/api/auth"
-	"github.com/vuduongtp/go-core/internal/api/country"
-	"github.com/vuduongtp/go-core/internal/api/user"
+	authSvc "github.com/vuduongtp/go-core/internal/api/service/auth"
+	countrySvc "github.com/vuduongtp/go-core/internal/api/service/country"
+	userSvc "github.com/vuduongtp/go-core/internal/api/service/user"
 	"github.com/vuduongtp/go-core/internal/model"
 	"github.com/vuduongtp/go-core/internal/repository"
 	"github.com/vuduongtp/go-core/pkg/database"
@@ -49,23 +49,23 @@ func ProvideAuth(jwtSvc *jwt.Service) model.Auth {
 }
 
 // ProvideAuthJWT creates auth.JWT interface from JWT service
-func ProvideAuthJWT(jwtSvc *jwt.Service) auth.JWT {
+func ProvideAuthJWT(jwtSvc *jwt.Service) authSvc.JWT {
 	return jwtSvc
 }
 
 // ProvideAuthService creates auth service
-func ProvideAuthService(db *gorm.DB, userDB *repository.UserRepository, jwtSvc auth.JWT) auth.Service {
-	return auth.New(db, userDB, jwtSvc)
+func ProvideAuthService(db *gorm.DB, userDB *repository.UserRepository, jwtSvc authSvc.JWT) authSvc.Service {
+	return authSvc.New(db, userDB, jwtSvc)
 }
 
 // ProvideUserService creates user service
-func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository) user.Service {
-	return user.New(db, userDB)
+func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository) userSvc.Service {
+	return userSvc.New(db, userDB)
 }
 
 // ProvideCountryService creates country service
-func ProvideCountryService(db *gorm.DB, countryDB *repository.CountryRepository) country.Service {
-	return country.New(db, countryDB)
+func ProvideCountryService(db *gorm.DB, countryDB *repository.CountryRepository) countrySvc.Service {
+	return countrySvc.New(db, countryDB)
 }
 
 // ProvideServer creates Echo server
@@ -87,9 +87,9 @@ type Application struct {
 	Server     *echo.Echo
 	JWT        *jwt.Service
 	Auth       model.Auth
-	AuthSvc    auth.Service
-	UserSvc    user.Service
-	CountrySvc country.Service
+	AuthSvc    authSvc.Service
+	UserSvc    userSvc.Service
+	CountrySvc countrySvc.Service
 }
 
 // InitializeApplication uses wire to build all dependencies

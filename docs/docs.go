@@ -45,7 +45,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_auth.Credentials"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_auth.Credentials"
                         }
                     }
                 ],
@@ -92,7 +92,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_auth.RefreshTokenData"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_auth.RefreshTokenData"
                         }
                     }
                 ],
@@ -180,7 +180,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_country.ListResp"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_country.ListResp"
                         }
                     },
                     "400": {
@@ -234,7 +234,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_country.CreationData"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_country.CreationData"
                         }
                     }
                 ],
@@ -242,7 +242,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/AuthToken"
+                            "$ref": "#/definitions/Country"
                         }
                     },
                     "401": {
@@ -419,7 +419,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_country.UpdateData"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_country.UpdateData"
                         }
                     }
                 ],
@@ -525,7 +525,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_user.ListResp"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.ListResp"
                         }
                     },
                     "400": {
@@ -579,7 +579,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_user.CreationData"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.CreationData"
                         }
                     }
                 ],
@@ -702,7 +702,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_user.PasswordChangeData"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.PasswordChangeData"
                         }
                     }
                 ],
@@ -911,7 +911,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_user.UpdateData"
+                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.UpdateData"
                         }
                     }
                 ],
@@ -1082,19 +1082,7 @@ const docTemplate = `{
                 }
             }
         },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
-        "internal_api_auth.Credentials": {
+        "github_com_vuduongtp_go-core_internal_api_service_auth.Credentials": {
             "type": "object",
             "required": [
                 "password",
@@ -1111,7 +1099,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_auth.RefreshTokenData": {
+        "github_com_vuduongtp_go-core_internal_api_service_auth.RefreshTokenData": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -1122,7 +1110,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_country.CreationData": {
+        "github_com_vuduongtp_go-core_internal_api_service_country.CreationData": {
             "type": "object",
             "required": [
                 "code",
@@ -1149,7 +1137,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_country.ListResp": {
+        "github_com_vuduongtp_go-core_internal_api_service_country.ListResp": {
             "type": "object",
             "properties": {
                 "data": {
@@ -1165,7 +1153,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_country.UpdateData": {
+        "github_com_vuduongtp_go-core_internal_api_service_country.UpdateData": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1187,7 +1175,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_user.CreationData": {
+        "github_com_vuduongtp_go-core_internal_api_service_user.CreationData": {
             "type": "object",
             "required": [
                 "email",
@@ -1227,7 +1215,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_user.ListResp": {
+        "github_com_vuduongtp_go-core_internal_api_service_user.ListResp": {
             "type": "object",
             "properties": {
                 "data": {
@@ -1241,7 +1229,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_user.PasswordChangeData": {
+        "github_com_vuduongtp_go-core_internal_api_service_user.PasswordChangeData": {
             "type": "object",
             "required": [
                 "new_password",
@@ -1261,7 +1249,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_user.UpdateData": {
+        "github_com_vuduongtp_go-core_internal_api_service_user.UpdateData": {
             "type": "object",
             "properties": {
                 "blocked": {
@@ -1281,6 +1269,18 @@ const docTemplate = `{
                 },
                 "role": {
                     "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
                 }
             }
         }

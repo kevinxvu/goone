@@ -9,9 +9,9 @@ package di
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/vuduongtp/go-core/config"
-	"github.com/vuduongtp/go-core/internal/api/auth"
-	"github.com/vuduongtp/go-core/internal/api/country"
-	"github.com/vuduongtp/go-core/internal/api/user"
+	"github.com/vuduongtp/go-core/internal/api/service/auth"
+	"github.com/vuduongtp/go-core/internal/api/service/country"
+	"github.com/vuduongtp/go-core/internal/api/service/user"
 	"github.com/vuduongtp/go-core/internal/model"
 	"github.com/vuduongtp/go-core/internal/repository"
 	"github.com/vuduongtp/go-core/pkg/database"
