@@ -1,4 +1,4 @@
-package server
+package binder
 
 import (
 	"github.com/labstack/echo/v4"

@@ -10,25 +10,18 @@ import (
 )
 
 // New creates new user application service
-func New(db *gorm.DB, udb MyDB, cr Crypter) *User {
-	return &User{db: db, udb: udb, cr: cr}
+func New(db *gorm.DB, udb MyDB) *User {
+	return &User{db: db, udb: udb}
 }
 
 // User represents user application service
 type User struct {
 	db  *gorm.DB
 	udb MyDB
-	cr  Crypter
 }
 
 // MyDB represents user repository interface
 type MyDB interface {
 	database.Intf
 	FindByUsername(context.Context, *gorm.DB, string) (*model.User, error)
-}
-
-// Crypter represents security interface
-type Crypter interface {
-	CompareHashAndPassword(hasedPwd string, rawPwd string) bool
-	HashPassword(string) string
 }

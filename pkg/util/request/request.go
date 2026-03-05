@@ -1,4 +1,4 @@
-package httputil
+package request
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server"
+	"github.com/vuduongtp/go-core/pkg/server/apperr"
 
 	"github.com/imdatngo/gowhere"
 	"github.com/labstack/echo/v4"
@@ -16,7 +16,7 @@ import (
 func ReqID(c echo.Context) (int, error) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return 0, server.NewHTTPValidationError("Invalid ID")
+		return 0, apperr.NewHTTPValidationError("Invalid ID")
 	}
 	return id, nil
 }
@@ -25,7 +25,7 @@ func ReqID(c echo.Context) (int, error) {
 func ReqIDint64(c echo.Context) (int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		return 0, server.NewHTTPValidationError("Invalid ID")
+		return 0, apperr.NewHTTPValidationError("Invalid ID")
 	}
 	return id, nil
 }
@@ -49,7 +49,7 @@ func RemoveSpacePointer(s *string) *string {
 }
 
 // ListRequest holds data of listing request from react-admin
-// Note: To add these parameters to swagger:operation, check the file /internal/util/swagger
+// Note: To add these parameters to swagger:operation, check the file /pkg/util/swagger
 type ListRequest struct {
 	// Number of records per page
 	Limit int `json:"l,omitempty" query:"l" default:"25"`
@@ -80,11 +80,11 @@ func ReqListQuery(c echo.Context) (*database.ListQueryCondition, error) {
 		var filter interface{}
 		err := json.Unmarshal([]byte(lr.Filter), &filter)
 		if err != nil {
-			return nil, server.NewHTTPValidationError("Invalid filter, expecting JSON string").SetInternal(err)
+			return nil, apperr.NewHTTPValidationError("Invalid filter, expecting JSON string").SetInternal(err)
 		}
 
 		if err := lq.Filter.Where(filter).Build().Error; err != nil {
-			return nil, server.NewHTTPValidationError("Cannot parse filter").SetInternal(err)
+			return nil, apperr.NewHTTPValidationError("Cannot parse filter").SetInternal(err)
 		}
 	}
 

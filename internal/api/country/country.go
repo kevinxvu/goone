@@ -6,14 +6,14 @@ import (
 
 	"github.com/vuduongtp/go-core/internal/model"
 	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server"
+	"github.com/vuduongtp/go-core/pkg/server/apperr"
 	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
 )
 
 // Custom errors
 var (
-	ErrCountryNotFound    = server.NewHTTPError(http.StatusBadRequest, "COUNTRY_NOTFOUND", "Country not found")
-	ErrCountryNameExisted = server.NewHTTPValidationError("Country name already exists")
+	ErrCountryNotFound    = apperr.NewHTTPError(http.StatusBadRequest, "COUNTRY_NOTFOUND", "Country not found")
+	ErrCountryNameExisted = apperr.NewHTTPValidationError("Country name already exists")
 )
 
 // Create creates a new country
@@ -28,7 +28,7 @@ func (s *Country) Create(ctx context.Context, authUsr *model.AuthUser, data Crea
 		PhoneCode: data.PhoneCode,
 	}
 	if err := s.cdb.Create(ctx, s.db, rec); err != nil {
-		return nil, server.NewHTTPInternalError("Error creating country").SetInternal(err)
+		return nil, apperr.NewHTTPInternalError("Error creating country").SetInternal(err)
 	}
 
 	return rec, nil
@@ -48,7 +48,7 @@ func (s *Country) View(ctx context.Context, authUsr *model.AuthUser, id int) (*m
 func (s *Country) List(ctx context.Context, authUsr *model.AuthUser, lq *database.ListQueryCondition, count *int64) ([]*model.Country, error) {
 	var data []*model.Country
 	if err := s.cdb.List(ctx, s.db, &data, lq, count); err != nil {
-		return nil, server.NewHTTPInternalError("Error listing country").SetInternal(err)
+		return nil, apperr.NewHTTPInternalError("Error listing country").SetInternal(err)
 	}
 
 	return data, nil
@@ -63,7 +63,7 @@ func (s *Country) Update(ctx context.Context, authUsr *model.AuthUser, id int, d
 	// optimistic update
 	updates := structutil.ToMap(data)
 	if err := s.cdb.Update(ctx, s.db, updates, id); err != nil {
-		return nil, server.NewHTTPInternalError("Error updating country").SetInternal(err)
+		return nil, apperr.NewHTTPInternalError("Error updating country").SetInternal(err)
 	}
 
 	rec := new(model.Country)
@@ -81,7 +81,7 @@ func (s *Country) Delete(ctx context.Context, authUsr *model.AuthUser, id int) e
 	}
 
 	if err := s.cdb.Delete(ctx, s.db, id); err != nil {
-		return server.NewHTTPInternalError("Error deleting country").SetInternal(err)
+		return apperr.NewHTTPInternalError("Error deleting country").SetInternal(err)
 	}
 
 	return nil

@@ -12,8 +12,11 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/vuduongtp/go-core/pkg/logging"
+	"github.com/vuduongtp/go-core/pkg/server/apperr"
+	"github.com/vuduongtp/go-core/pkg/server/binder"
 	loggerMw "github.com/vuduongtp/go-core/pkg/server/middleware/logger"
 	"github.com/vuduongtp/go-core/pkg/server/middleware/secure"
+	"go.uber.org/zap"
 )
 
 // Config represents server specific config
@@ -62,11 +65,11 @@ func (c *Config) fillDefaults() {
 func New(cfg *Config) *echo.Echo {
 	cfg.fillDefaults()
 	e := echo.New()
-	e.Validator = NewValidator()
-	e.HTTPErrorHandler = NewErrorHandler(e).Handle
-	e.Binder = NewBinder()
+	e.Validator = binder.NewValidator()
+	e.HTTPErrorHandler = apperr.NewErrorHandler(e).Handle
+	e.Binder = binder.NewBinder()
 	e.Debug = cfg.Debug
-	e.Logger = logging.NewEchoLogger()
+	e.Logger.SetOutput(zap.NewStdLog(logging.DefaultLogger().Sugar().Desugar()).Writer())
 	e.Use(loggerMw.Middleware())
 	if e.Debug {
 		e.Logger.SetLevel(log.DEBUG)

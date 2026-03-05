@@ -11,8 +11,15 @@ This is a clean architecture Go API starter kit using **Echo v4** and **GORM**. 
 - **internal/api**: Domain modules (user, auth, country) - each has http.go, service.go, model
 - **internal/repository**: Repository implementations with custom queries (flat structure)
 - **pkg/database**: Database connection, base repository with CRUD operations
-- **pkg/server**: Echo server setup, middleware, validators, error handling
-- **pkg/util**: Shared utilities (crypter, cfg, swagger, etc.)
+- **pkg/server**: Echo server setup with subpackages:
+  - **apperr**: Application error types and HTTP error handler
+  - **binder**: Custom request binder and validators
+  - **middleware**: JWT, logger, secure middlewares
+- **pkg/util**: Shared utilities:
+  - **request**: HTTP request helpers (ReqID, ReqListQuery, etc.)
+  - **crypter**: Password hashing, UID generation (static functions)
+  - **cfg**: Configuration loader
+  - **swagger**: Swagger types and utilities
 
 ## Code Patterns
 
@@ -38,11 +45,18 @@ func NewHTTP(svc Service, auth model.Auth, eg *echo.Group) {
 type User struct {
     db   *gorm.DB
     udb  MyDB
-    cr   Crypter
 }
 
-func New(db *gorm.DB, udb MyDB, cr Crypter) *User {
-    return &User{db: db, udb: udb, cr: cr}
+func New(db *gorm.DB, udb MyDB) *User {
+    return &User{db: db, udb: udb}
+}
+
+// Use crypter static functions directly
+import "github.com/vuduongtp/go-core/pkg/util/crypter"
+
+func (s *User) Create(ctx context.Context, data CreationData) (*model.User, error) {
+    hashedPassword := crypter.HashPassword(data.Password)
+    // ... rest of the code
 }
 ```
 
@@ -62,8 +76,8 @@ package di
 import "github.com/google/wire"
 
 // Provider function - creates and returns a service
-func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository, crypterSvc *crypter.Service) user.Service {
-    return user.New(db, userDB, crypterSvc)
+func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository) user.Service {
+    return user.New(db, userDB)
 }
 
 // Injector function - tells Wire what to build
@@ -72,7 +86,6 @@ func InitializeApplication() (*Application, error) {
         ProvideConfig,
         ProvideDB,
         ProvideUserDB,
-        ProvideCrypter,
         ProvideUserService,
         // ... other providers
         wire.Struct(new(Application), "*"),
@@ -196,9 +209,17 @@ Protected routes use `v1Router.Use(jwtSvc.MWFunc())` - see [cmd/api/main.go](cmd
 
 ### 6. Custom Validators
 
-Register custom validators in [pkg/server/validator.go](pkg/server/validator.go#L15-L20). Available:
+Register custom validators in `pkg/server/binder/validator.go`. Available:
 - `validate:"mobile"` - Phone number format `^(\+\d{1,3})?\s?\d{5,15}$`
 - `validate:"date"` - Date format `YYYY-MM-DD` or with `T00:00:00Z`
+
+**Usage in structs:**
+```go
+type UserData struct {
+    Mobile string `json:"mobile" validate:"required,mobile"`
+    DOB    string `json:"dob" validate:"required,date"`
+}
+```
 
 ### 7. Migrations
 
@@ -304,12 +325,62 @@ For SQLite: Use file path like `./test.db`
 
 ## Common Utilities
 
-- **Package imports**: `database` (from pkg/database), `logging` (from pkg/logging), `repository` (from internal/repository)
-- **Error handling**: Use `server.NewHTTPError(statusCode, code, message)` for API errors
-- **Logging**: Use `logging.FromContext(ctx)` with zap fields, not printf-style logging in production code
-- **Context propagation**: Always pass `context.Context` through service and DB layers to preserve request tracking
-- **Repository access**: Import `"github.com/vuduongtp/go-core/internal/repository"` and use `repository.UserRepository`, `repository.CountryRepository`
+### Package Structure & Imports
 
-## AWS Lambda Support
+**Core Packages:**
+- `database` - Import from `pkg/database` for base repository operations
+- `logging` - Import from `pkg/logging` for structured logging
+- `repository` - Import from `internal/repository` and use `repository.UserRepository`, etc.
+- `apperr` - Import from `pkg/server/apperr` for HTTP error handling
+- `request` - Import from `pkg/util/request` for HTTP request utilities
+- `binder` - Import from `pkg/server/binder` for validators and binders
+- `crypter` - Import from `pkg/util/crypter` for password hashing (static functions)
 
-The codebase supports AWS Lambda deployment (see `functions/` and `internal/functions/`). Migrations can run as Lambda functions using apex deployment scripts in [Makefile](Makefile#L68-L88).
+**Error Handling:**
+```go
+import "github.com/vuduongtp/go-core/pkg/server/apperr"
+
+// Create custom errors
+var ErrUserNotFound = apperr.NewHTTPError(http.StatusBadRequest, "USER_NOTFOUND", "User not found")
+var ErrInvalidInput = apperr.NewHTTPValidationError("Invalid input data")
+var ErrInternal = apperr.NewHTTPInternalError("Internal server error")
+
+// Use in handlers
+if err != nil {
+    return ErrUserNotFound.SetInternal(err)
+}
+```
+
+**Request Utilities:**
+```go
+import "github.com/vuduongtp/go-core/pkg/util/request"
+
+// Get ID from URL parameter
+id, err := request.ReqID(c)
+
+// Parse list query parameters (pagination, filter, sort)
+lq, err := request.ReqListQuery(c)
+
+// String helpers
+email := request.TrimSpacePointer(data.Email)
+mobile := request.RemoveSpacePointer(data.Mobile)
+```
+
+**Logging:**
+- Use `logging.FromContext(ctx)` to get logger with request context (includes correlation ID)
+- Use Zap fields for structured logging, not printf-style in production code
+- Example: `logging.FromContext(ctx).Info("user created", zap.Int("user_id", user.ID))`
+
+**Context Propagation:**
+- Always pass `context.Context` through service and DB layers to preserve request tracking
+- Use `c.Request().Context()` to get context from Echo handler
+
+**Crypter (Static Package):**
+```go
+import "github.com/vuduongtp/go-core/pkg/util/crypter"
+
+// All functions are static - no instantiation required
+hashedPassword := crypter.HashPassword(plainPassword)
+isValid := crypter.CompareHashAndPassword(hashedPassword, plainPassword)
+uid := crypter.UID()
+```

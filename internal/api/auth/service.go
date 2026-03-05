@@ -11,12 +11,11 @@ import (
 )
 
 // New creates new auth service
-func New(db *gorm.DB, udb UserDB, jwt JWT, cr Crypter) *Auth {
+func New(db *gorm.DB, udb UserDB, jwt JWT) *Auth {
 	return &Auth{
 		db:  db,
 		udb: udb,
 		jwt: jwt,
-		cr:  cr,
 	}
 }
 
@@ -25,7 +24,6 @@ type Auth struct {
 	db  *gorm.DB
 	udb UserDB
 	jwt JWT
-	cr  Crypter
 }
 
 // UserDB represents user repository interface
@@ -38,10 +36,4 @@ type UserDB interface {
 // JWT represents token generator (jwt) interface
 type JWT interface {
 	GenerateToken(map[string]interface{}, *time.Time) (string, int, error)
-}
-
-// Crypter represents security interface
-type Crypter interface {
-	CompareHashAndPassword(string, string) bool
-	UID() string
 }

@@ -7,14 +7,15 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/server"
+	"github.com/vuduongtp/go-core/pkg/server/apperr"
+	"github.com/vuduongtp/go-core/pkg/util/crypter"
 )
 
 // Custom errors
 var (
-	ErrInvalidCredentials  = server.NewHTTPError(http.StatusUnauthorized, "INVALID_CREDENTIALS", "Username or password is incorrect")
-	ErrUserBlocked         = server.NewHTTPError(http.StatusUnauthorized, "USER_BLOCKED", "Your account has been blocked and may not login")
-	ErrInvalidRefreshToken = server.NewHTTPError(http.StatusUnauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token")
+	ErrInvalidCredentials  = apperr.NewHTTPError(http.StatusUnauthorized, "INVALID_CREDENTIALS", "Username or password is incorrect")
+	ErrUserBlocked         = apperr.NewHTTPError(http.StatusUnauthorized, "USER_BLOCKED", "Your account has been blocked and may not login")
+	ErrInvalidRefreshToken = apperr.NewHTTPError(http.StatusUnauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token")
 )
 
 // LoginUser logs in the given user, returns access token
@@ -27,13 +28,13 @@ func (s *Auth) LoginUser(ctx context.Context, u *model.User) (*model.AuthToken, 
 	}
 	token, expiresin, err := s.jwt.GenerateToken(claims, nil)
 	if err != nil {
-		return nil, server.NewHTTPInternalError("Error generating token").SetInternal(err)
+		return nil, apperr.NewHTTPInternalError("Error generating token").SetInternal(err)
 	}
 
-	refreshToken := s.cr.UID()
+	refreshToken := crypter.UID()
 	err = s.udb.Update(ctx, s.db, map[string]interface{}{"refresh_token": refreshToken, "last_login": time.Now()}, u.ID)
 	if err != nil {
-		return nil, server.NewHTTPInternalError("Error updating user").SetInternal(err)
+		return nil, apperr.NewHTTPInternalError("Error updating user").SetInternal(err)
 	}
 
 	return &model.AuthToken{AccessToken: token, TokenType: "bearer", ExpiresIn: expiresin, RefreshToken: refreshToken}, nil
@@ -45,7 +46,7 @@ func (s *Auth) Authenticate(ctx context.Context, data Credentials) (*model.AuthT
 	if err != nil || usr == nil {
 		return nil, ErrInvalidCredentials.SetInternal(err)
 	}
-	if !s.cr.CompareHashAndPassword(usr.Password, data.Password) {
+	if !crypter.CompareHashAndPassword(usr.Password, data.Password) {
 		return nil, ErrInvalidCredentials
 	}
 	if usr.Blocked {

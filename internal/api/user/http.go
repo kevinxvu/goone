@@ -7,7 +7,7 @@ import (
 
 	"github.com/vuduongtp/go-core/internal/model"
 	"github.com/vuduongtp/go-core/pkg/database"
-	httputil "github.com/vuduongtp/go-core/pkg/util/http"
+	"github.com/vuduongtp/go-core/pkg/util/request"
 
 	"github.com/labstack/echo/v4"
 )
@@ -126,7 +126,7 @@ func (h *HTTP) create(c echo.Context) error {
 // @Failure		500				{object}	SwaggErrDetailsResp
 // @Router			/v1/users/{id}	[get]
 func (h *HTTP) view(c echo.Context) error {
-	id, err := httputil.ReqID(c)
+	id, err := request.ReqID(c)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func (h *HTTP) view(c echo.Context) error {
 // @Failure		500			{object}	SwaggErrDetailsResp
 // @Router			/v1/users	[get]
 func (h *HTTP) list(c echo.Context) error {
-	lq, err := httputil.ReqListQuery(c)
+	lq, err := request.ReqListQuery(c)
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,7 @@ func (h *HTTP) list(c echo.Context) error {
 // @Failure		500				{object}	SwaggErrDetailsResp
 // @Router			/v1/users/{id}	[patch]
 func (h *HTTP) update(c echo.Context) error {
-	id, err := httputil.ReqID(c)
+	id, err := request.ReqID(c)
 	if err != nil {
 		return err
 	}
@@ -191,11 +191,11 @@ func (h *HTTP) update(c echo.Context) error {
 	if err := c.Bind(&r); err != nil {
 		return err
 	}
-	r.Email = httputil.TrimSpacePointer(r.Email)
-	r.FirstName = httputil.TrimSpacePointer(r.FirstName)
-	r.LastName = httputil.TrimSpacePointer(r.LastName)
-	r.Mobile = httputil.RemoveSpacePointer(r.Mobile)
-	r.Role = httputil.RemoveSpacePointer(r.Role)
+	r.Email = request.TrimSpacePointer(r.Email)
+	r.FirstName = request.TrimSpacePointer(r.FirstName)
+	r.LastName = request.TrimSpacePointer(r.LastName)
+	r.Mobile = request.RemoveSpacePointer(r.Mobile)
+	r.Role = request.RemoveSpacePointer(r.Role)
 
 	resp, err := h.svc.Update(c.Request().Context(), h.auth.User(c), id, r)
 	if err != nil {
@@ -221,7 +221,7 @@ func (h *HTTP) update(c echo.Context) error {
 // @Failure		500				{object}	SwaggErrDetailsResp
 // @Router			/v1/users/{id}	[delete]
 func (h *HTTP) delete(c echo.Context) error {
-	id, err := httputil.ReqID(c)
+	id, err := request.ReqID(c)
 	if err != nil {
 		return err
 	}

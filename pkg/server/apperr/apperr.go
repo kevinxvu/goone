@@ -1,4 +1,4 @@
-package server
+package apperr
 
 import (
 	"encoding/json"

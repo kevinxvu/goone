@@ -17,7 +17,6 @@ import (
 	"github.com/vuduongtp/go-core/pkg/database"
 	"github.com/vuduongtp/go-core/pkg/server"
 	"github.com/vuduongtp/go-core/pkg/server/middleware/jwt"
-	"github.com/vuduongtp/go-core/pkg/util/crypter"
 	"gorm.io/gorm"
 )
 
@@ -38,9 +37,8 @@ func InitializeApplication() (*Application, error) {
 	auth := ProvideAuth(service)
 	userRepository := ProvideUserDB()
 	jwt := ProvideAuthJWT(service)
-	crypterService := ProvideCrypter()
-	authService := ProvideAuthService(db, userRepository, jwt, crypterService)
-	userService := ProvideUserService(db, userRepository, crypterService)
+	authService := ProvideAuthService(db, userRepository, jwt)
+	userService := ProvideUserService(db, userRepository)
 	countryRepository := ProvideCountryDB()
 	countryService := ProvideCountryService(db, countryRepository)
 	application := &Application{
@@ -78,11 +76,6 @@ func ProvideCountryDB() *repository.CountryRepository {
 	return repository.NewCountryRepository()
 }
 
-// ProvideCrypter creates crypter service
-func ProvideCrypter() *crypter.Service {
-	return crypter.New()
-}
-
 // ProvideJWT creates JWT service
 func ProvideJWT(cfg *config.Configuration) *jwt.Service {
 	return jwt.New(cfg.JwtAlgorithm, cfg.JwtSecret, cfg.JwtDuration)
@@ -99,13 +92,13 @@ func ProvideAuthJWT(jwtSvc *jwt.Service) auth.JWT {
 }
 
 // ProvideAuthService creates auth service
-func ProvideAuthService(db *gorm.DB, userDB *repository.UserRepository, jwtSvc auth.JWT, crypterSvc *crypter.Service) auth.Service {
-	return auth.New(db, userDB, jwtSvc, crypterSvc)
+func ProvideAuthService(db *gorm.DB, userDB *repository.UserRepository, jwtSvc auth.JWT) auth.Service {
+	return auth.New(db, userDB, jwtSvc)
 }
 
 // ProvideUserService creates user service
-func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository, crypterSvc *crypter.Service) user.Service {
-	return user.New(db, userDB, crypterSvc)
+func ProvideUserService(db *gorm.DB, userDB *repository.UserRepository) user.Service {
+	return user.New(db, userDB)
 }
 
 // ProvideCountryService creates country service
