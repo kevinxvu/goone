@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/kevinxvu/goone/pkg/logging"
 	"github.com/pressly/goose/v3"
-	"github.com/vuduongtp/go-core/pkg/logging"
 	"go.uber.org/zap"
 )
 

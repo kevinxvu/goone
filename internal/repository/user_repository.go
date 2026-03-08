@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/database"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/database"
 
 	"gorm.io/gorm"
 )

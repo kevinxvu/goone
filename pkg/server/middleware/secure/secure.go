@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/kevinxvu/goone/pkg/logging"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/lo"
-	"github.com/vuduongtp/go-core/pkg/logging"
 	"go.uber.org/zap/zapcore"
 )
 

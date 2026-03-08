@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/vuduongtp/go-core/internal/api/docs"
-	"github.com/vuduongtp/go-core/internal/api/router"
-	"github.com/vuduongtp/go-core/internal/di"
-	"github.com/vuduongtp/go-core/pkg/logging"
-	"github.com/vuduongtp/go-core/pkg/server"
-	swaggerutil "github.com/vuduongtp/go-core/pkg/util/swagger"
+	"github.com/kevinxvu/goone/internal/api/docs"
+	"github.com/kevinxvu/goone/internal/api/router"
+	"github.com/kevinxvu/goone/internal/di"
+	"github.com/kevinxvu/goone/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/server"
+	swaggerutil "github.com/kevinxvu/goone/pkg/util/swagger"
 	"go.uber.org/zap/zapcore"
 )
 

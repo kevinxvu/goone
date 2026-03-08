@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/kevinxvu/goone/config"
+	"github.com/kevinxvu/goone/pkg/database"
+	cfgutil "github.com/kevinxvu/goone/pkg/util/config"
 	"github.com/pressly/goose/v3"
-	"github.com/vuduongtp/go-core/config"
-	"github.com/vuduongtp/go-core/pkg/database"
-	cfgutil "github.com/vuduongtp/go-core/pkg/util/config"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -28,11 +28,8 @@ var (
 	verbose      = flags.Bool("v", false, "enable verbose mode")
 	help         = flags.Bool("h", false, "print help")
 	version      = flags.Bool("version", false, "print version")
-	certfile     = flags.String("certfile", "", "file path to root CA's certificates in pem format (only support on mysql)")
 	sequential   = flags.Bool("s", false, "use sequential numbering for new migrations")
 	allowMissing = flags.Bool("allow-missing", false, "applies missing (out-of-order) migrations")
-	sslcert      = flags.String("ssl-cert", "", "file path to SSL certificates in pem format (only support on mysql)")
-	sslkey       = flags.String("ssl-key", "", "file path to SSL key in pem format (only support on mysql)")
 	noVersioning = flags.Bool("no-versioning", false, "apply migration commands with no versioning, in file order, from directory pointed to")
 )
 

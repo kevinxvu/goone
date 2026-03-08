@@ -3,11 +3,11 @@ package router
 import (
 	"net/http"
 
+	"github.com/kevinxvu/goone/internal/api/handler/auth"
+	"github.com/kevinxvu/goone/internal/api/handler/country"
+	"github.com/kevinxvu/goone/internal/api/handler/user"
+	"github.com/kevinxvu/goone/internal/di"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/internal/api/handler/auth"
-	"github.com/vuduongtp/go-core/internal/api/handler/country"
-	"github.com/vuduongtp/go-core/internal/api/handler/user"
-	"github.com/vuduongtp/go-core/internal/di"
 )
 
 // RegisterRoutes registers all API routes

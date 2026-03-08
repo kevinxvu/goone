@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/kevinxvu/goone/pkg/logging"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/pkg/logging"
 	"go.uber.org/zap"
 )
 

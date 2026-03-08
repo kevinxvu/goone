@@ -20,7 +20,7 @@ Each repository:
 ## Usage
 
 ```go
-import "github.com/vuduongtp/go-core/internal/repository"
+import "github.com/kevinxvu/goone/internal/repository"
 
 // In DI/Wire
 userRepo := repository.NewUserRepository()
@@ -44,8 +44,8 @@ Example:
 package repository
 
 import (
-    "github.com/vuduongtp/go-core/internal/model"
-    "github.com/vuduongtp/go-core/pkg/database"
+    "github.com/kevinxvu/goone/internal/model"
+    "github.com/kevinxvu/goone/pkg/database"
 )
 
 func NewProductRepository() *ProductRepository {

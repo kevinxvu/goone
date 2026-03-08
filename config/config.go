@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	cfgutil "github.com/vuduongtp/go-core/pkg/util/config"
+	cfgutil "github.com/kevinxvu/goone/pkg/util/config"
 )
 
 // Configuration holds data necessery for configuring application
@@ -24,6 +24,13 @@ type Configuration struct {
 	JwtAlgorithm    string   `env:"JWT_ALGORITHM"`
 	IsEnableAIPDocs bool     `env:"IS_ENABLE_API_DOCS"`
 	APIDocsPath     string   `env:"API_DOCS_PATH"`
+
+	// OpenAI configuration
+	OpenAIAPIKey       string `env:"OPENAI_API_KEY"`
+	OpenAIBaseURL      string `env:"OPENAI_BASE_URL"`
+	OpenAITimeout      int    `env:"OPENAI_TIMEOUT"`
+	OpenAIMaxRetries   int    `env:"OPENAI_MAX_RETRIES"`
+	OpenAIDefaultModel string `env:"OPENAI_DEFAULT_MODEL"`
 }
 
 // Load returns Configuration struct

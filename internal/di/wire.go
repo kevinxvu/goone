@@ -5,16 +5,17 @@ package di
 
 import (
 	"github.com/google/wire"
+	"github.com/kevinxvu/goone/config"
+	authSvc "github.com/kevinxvu/goone/internal/api/service/auth"
+	countrySvc "github.com/kevinxvu/goone/internal/api/service/country"
+	userSvc "github.com/kevinxvu/goone/internal/api/service/user"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/internal/repository"
+	"github.com/kevinxvu/goone/pkg/database"
+	openaiPkg "github.com/kevinxvu/goone/pkg/openai"
+	"github.com/kevinxvu/goone/pkg/server"
+	"github.com/kevinxvu/goone/pkg/server/middleware/jwt"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/config"
-	authSvc "github.com/vuduongtp/go-core/internal/api/service/auth"
-	countrySvc "github.com/vuduongtp/go-core/internal/api/service/country"
-	userSvc "github.com/vuduongtp/go-core/internal/api/service/user"
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/internal/repository"
-	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server"
-	"github.com/vuduongtp/go-core/pkg/server/middleware/jwt"
 	"gorm.io/gorm"
 )
 
@@ -80,6 +81,17 @@ func ProvideServer(cfg *config.Configuration) *echo.Echo {
 	})
 }
 
+// ProvideOpenAIService creates OpenAI service
+func ProvideOpenAIService(cfg *config.Configuration) *openaiPkg.Service {
+	return openaiPkg.New(openaiPkg.Config{
+		APIKey:       cfg.OpenAIAPIKey,
+		BaseURL:      cfg.OpenAIBaseURL,
+		Timeout:      cfg.OpenAITimeout,
+		MaxRetries:   cfg.OpenAIMaxRetries,
+		DefaultModel: cfg.OpenAIDefaultModel,
+	})
+}
+
 // Application holds all initialized services
 type Application struct {
 	Config     *config.Configuration
@@ -90,6 +102,7 @@ type Application struct {
 	AuthSvc    authSvc.Service
 	UserSvc    userSvc.Service
 	CountrySvc countrySvc.Service
+	OpenAI     *openaiPkg.Service
 }
 
 // InitializeApplication uses wire to build all dependencies
@@ -106,6 +119,7 @@ func InitializeApplication() (*Application, error) {
 		ProvideUserService,
 		ProvideCountryService,
 		ProvideServer,
+		ProvideOpenAIService,
 		wire.Struct(new(Application), "*"),
 	)
 	return nil, nil

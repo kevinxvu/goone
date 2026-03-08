@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/vuduongtp/go-core/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/logging"
 	"gorm.io/gorm"
 )
 

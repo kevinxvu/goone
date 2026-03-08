@@ -7,16 +7,17 @@
 package di
 
 import (
+	"github.com/kevinxvu/goone/config"
+	"github.com/kevinxvu/goone/internal/api/service/auth"
+	"github.com/kevinxvu/goone/internal/api/service/country"
+	"github.com/kevinxvu/goone/internal/api/service/user"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/internal/repository"
+	"github.com/kevinxvu/goone/pkg/database"
+	"github.com/kevinxvu/goone/pkg/openai"
+	"github.com/kevinxvu/goone/pkg/server"
+	"github.com/kevinxvu/goone/pkg/server/middleware/jwt"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/config"
-	"github.com/vuduongtp/go-core/internal/api/service/auth"
-	"github.com/vuduongtp/go-core/internal/api/service/country"
-	"github.com/vuduongtp/go-core/internal/api/service/user"
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/internal/repository"
-	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server"
-	"github.com/vuduongtp/go-core/pkg/server/middleware/jwt"
 	"gorm.io/gorm"
 )
 
@@ -41,6 +42,7 @@ func InitializeApplication() (*Application, error) {
 	userService := ProvideUserService(db, userRepository)
 	countryRepository := ProvideCountryDB()
 	countryService := ProvideCountryService(db, countryRepository)
+	openaiService := ProvideOpenAIService(configuration)
 	application := &Application{
 		Config:     configuration,
 		DB:         db,
@@ -50,6 +52,7 @@ func InitializeApplication() (*Application, error) {
 		AuthSvc:    authService,
 		UserSvc:    userService,
 		CountrySvc: countryService,
+		OpenAI:     openaiService,
 	}
 	return application, nil
 }
@@ -118,6 +121,17 @@ func ProvideServer(cfg *config.Configuration) *echo.Echo {
 	})
 }
 
+// ProvideOpenAIService creates OpenAI service
+func ProvideOpenAIService(cfg *config.Configuration) *openai.Service {
+	return openai.New(openai.Config{
+		APIKey:       cfg.OpenAIAPIKey,
+		BaseURL:      cfg.OpenAIBaseURL,
+		Timeout:      cfg.OpenAITimeout,
+		MaxRetries:   cfg.OpenAIMaxRetries,
+		DefaultModel: cfg.OpenAIDefaultModel,
+	})
+}
+
 // Application holds all initialized services
 type Application struct {
 	Config     *config.Configuration
@@ -128,4 +142,5 @@ type Application struct {
 	AuthSvc    auth.Service
 	UserSvc    user.Service
 	CountrySvc country.Service
+	OpenAI     *openai.Service
 }

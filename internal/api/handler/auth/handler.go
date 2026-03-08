@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
+	"github.com/kevinxvu/goone/internal/api/service/auth"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/internal/api/service/auth"
 )
 
 // HTTP represents auth http service

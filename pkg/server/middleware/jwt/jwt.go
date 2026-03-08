@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/logging"
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"

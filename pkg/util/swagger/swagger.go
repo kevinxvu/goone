@@ -1,8 +1,8 @@
 package swaggerutil
 
 import (
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
-	"github.com/vuduongtp/go-core/pkg/util/request"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
+	"github.com/kevinxvu/goone/pkg/util/request"
 )
 
 // SwaggOKResp success empty response

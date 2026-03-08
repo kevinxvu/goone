@@ -45,8 +45,8 @@ package user
 
 import (
     "context"
-    "github.com/vuduongtp/go-core/internal/model"
-    "github.com/vuduongtp/go-core/pkg/database"
+    "github.com/kevinxvu/goone/internal/model"
+    "github.com/kevinxvu/goone/pkg/database"
     "gorm.io/gorm"
 )
 
@@ -112,8 +112,8 @@ package user
 import (
     "net/http"
     "github.com/labstack/echo/v4"
-    "github.com/vuduongtp/go-core/internal/api/service/user"
-    "github.com/vuduongtp/go-core/internal/model"
+    "github.com/kevinxvu/goone/internal/api/service/user"
+    "github.com/kevinxvu/goone/internal/model"
 )
 
 // HTTP struct
@@ -149,9 +149,9 @@ func (h *HTTP) create(c echo.Context) error {
 package router
 
 import (
-    "github.com/vuduongtp/go-core/internal/api/handler/auth"
-    "github.com/vuduongtp/go-core/internal/api/handler/user"
-    "github.com/vuduongtp/go-core/internal/di"
+    "github.com/kevinxvu/goone/internal/api/handler/auth"
+    "github.com/kevinxvu/goone/internal/api/handler/user"
+    "github.com/kevinxvu/goone/internal/di"
 )
 
 func RegisterRoutes(app *di.Application) {
@@ -189,9 +189,9 @@ package di
 
 import (
     "github.com/google/wire"
-    userSvc "github.com/vuduongtp/go-core/internal/api/service/user"
-    authSvc "github.com/vuduongtp/go-core/internal/api/service/auth"
-    "github.com/vuduongtp/go-core/internal/repository"
+    userSvc "github.com/kevinxvu/goone/internal/api/service/user"
+    authSvc "github.com/kevinxvu/goone/internal/api/service/auth"
+    "github.com/kevinxvu/goone/internal/repository"
 )
 
 // Provider function - creates and returns a service
@@ -241,7 +241,7 @@ This creates `wire_gen.go` with the actual `InitializeApplication()` implementat
 
 3. **Use in main.go**:
 ```go
-import "github.com/vuduongtp/go-core/internal/di"
+import "github.com/kevinxvu/goone/internal/di"
 
 func main() {
     app, err := di.InitializeApplication()  // Wire-generated function
@@ -273,8 +273,8 @@ All repositories are in `internal/repository/` with a **flat structure**. Each r
 package repository
 
 import (
-    "github.com/vuduongtp/go-core/internal/model"
-    "github.com/vuduongtp/go-core/pkg/database"
+    "github.com/kevinxvu/goone/internal/model"
+    "github.com/kevinxvu/goone/pkg/database"
 )
 
 func NewUserRepository() *UserRepository {
@@ -418,7 +418,7 @@ go run cmd/migration/main.go redo                  # Redo last migration
 **Programmatic Usage:**
 ```go
 import (
-    "github.com/vuduongtp/go-core/pkg/util/migration"
+    "github.com/kevinxvu/goone/pkg/util/migration"
 )
 
 cfg := &migration.GooseConfig{
@@ -619,9 +619,9 @@ For SQLite: Use file path like `./test.db`
 - `migration` - Import from `pkg/util/migration` for database migrations
 
 **API Layer Packages:**
-- `service` - Import service packages with aliases: `userSvc "github.com/vuduongtp/go-core/internal/api/service/user"`
-- `handler` - Import handler packages: `"github.com/vuduongtp/go-core/internal/api/handler/user"`
-- `router` - Import router: `"github.com/vuduongtp/go-core/internal/api/router"`
+- `service` - Import service packages with aliases: `userSvc "github.com/kevinxvu/goone/internal/api/service/user"`
+- `handler` - Import handler packages: `"github.com/kevinxvu/goone/internal/api/handler/user"`
+- `router` - Import router: `"github.com/kevinxvu/goone/internal/api/router"`
 - DTOs are in service packages: Use `user.CreationData`, `user.UpdateData`, etc.
 - Service interfaces: Use `user.Service`, `auth.Service`, etc.
 
@@ -633,7 +633,7 @@ For SQLite: Use file path like `./test.db`
 
 **Error Handling:**
 ```go
-import "github.com/vuduongtp/go-core/pkg/server/apperr"
+import "github.com/kevinxvu/goone/pkg/server/apperr"
 
 // Create custom errors
 var ErrUserNotFound = apperr.NewHTTPError(http.StatusBadRequest, "USER_NOTFOUND", "User not found")
@@ -648,7 +648,7 @@ if err != nil {
 
 **Request Utilities:**
 ```go
-import "github.com/vuduongtp/go-core/pkg/util/request"
+import "github.com/kevinxvu/goone/pkg/util/request"
 
 // Get ID from URL parameter
 id, err := request.ReqID(c)
@@ -672,7 +672,7 @@ mobile := request.RemoveSpacePointer(data.Mobile)
 
 **Crypter (Static Package):**
 ```go
-import "github.com/vuduongtp/go-core/pkg/util/crypter"
+import "github.com/kevinxvu/goone/pkg/util/crypter"
 
 // All functions are static - no instantiation required
 hashedPassword := crypter.HashPassword(plainPassword)
@@ -682,7 +682,7 @@ uid := crypter.UID()
 
 **Configuration Loading:**
 ```go
-import cfgutil "github.com/vuduongtp/go-core/pkg/util/config"
+import cfgutil "github.com/kevinxvu/goone/pkg/util/config"
 
 cfg := new(Configuration)
 if err := cfgutil.LoadConfig(cfg, appName, stage); err != nil {

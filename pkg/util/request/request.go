@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
+	"github.com/kevinxvu/goone/pkg/database"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
 
 	"github.com/imdatngo/gowhere"
 	"github.com/labstack/echo/v4"

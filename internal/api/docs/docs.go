@@ -45,7 +45,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_auth.Credentials"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_auth.Credentials"
                         }
                     }
                 ],
@@ -92,7 +92,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_auth.RefreshTokenData"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_auth.RefreshTokenData"
                         }
                     }
                 ],
@@ -180,7 +180,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_country.ListResp"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_country.ListResp"
                         }
                     },
                     "400": {
@@ -234,7 +234,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_country.CreationData"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_country.CreationData"
                         }
                     }
                 ],
@@ -419,7 +419,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_country.UpdateData"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_country.UpdateData"
                         }
                     }
                 ],
@@ -525,7 +525,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.ListResp"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_user.ListResp"
                         }
                     },
                     "400": {
@@ -579,7 +579,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.CreationData"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_user.CreationData"
                         }
                     }
                 ],
@@ -702,7 +702,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.PasswordChangeData"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_user.PasswordChangeData"
                         }
                     }
                 ],
@@ -911,7 +911,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_vuduongtp_go-core_internal_api_service_user.UpdateData"
+                            "$ref": "#/definitions/github_com_kevinxvu_goone_internal_api_service_user.UpdateData"
                         }
                     }
                 ],
@@ -1082,7 +1082,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_auth.Credentials": {
+        "github_com_kevinxvu_goone_internal_api_service_auth.Credentials": {
             "type": "object",
             "required": [
                 "password",
@@ -1099,7 +1099,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_auth.RefreshTokenData": {
+        "github_com_kevinxvu_goone_internal_api_service_auth.RefreshTokenData": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -1110,7 +1110,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_country.CreationData": {
+        "github_com_kevinxvu_goone_internal_api_service_country.CreationData": {
             "type": "object",
             "required": [
                 "code",
@@ -1137,7 +1137,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_country.ListResp": {
+        "github_com_kevinxvu_goone_internal_api_service_country.ListResp": {
             "type": "object",
             "properties": {
                 "data": {
@@ -1153,7 +1153,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_country.UpdateData": {
+        "github_com_kevinxvu_goone_internal_api_service_country.UpdateData": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1175,7 +1175,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_user.CreationData": {
+        "github_com_kevinxvu_goone_internal_api_service_user.CreationData": {
             "type": "object",
             "required": [
                 "email",
@@ -1215,7 +1215,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_user.ListResp": {
+        "github_com_kevinxvu_goone_internal_api_service_user.ListResp": {
             "type": "object",
             "properties": {
                 "data": {
@@ -1229,7 +1229,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_user.PasswordChangeData": {
+        "github_com_kevinxvu_goone_internal_api_service_user.PasswordChangeData": {
             "type": "object",
             "required": [
                 "new_password",
@@ -1249,7 +1249,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_vuduongtp_go-core_internal_api_service_user.UpdateData": {
+        "github_com_kevinxvu_goone_internal_api_service_user.UpdateData": {
             "type": "object",
             "properties": {
                 "blocked": {

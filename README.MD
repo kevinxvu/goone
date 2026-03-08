@@ -1,63 +1,82 @@
-# GoCore - Golang API Starter Kit & Project Templates
+# GoOne — All-in-One Golang API Starter Kit
 
-GoCore is a comprehensive Golang API starter kit that provides a solid foundation for building scalable and maintainable APIs using the Go programming language. It comes with project templates, best practices, and a set of tools to streamline the development process.
+**GoOne** is a production-ready Go API starter kit built on clean architecture principles. Everything you need to build scalable, maintainable REST APIs is already wired up — just start coding your business logic.
 
-## Features
+> **All in one:** HTTP server, auth, database, migrations, logging, AWS integrations, OpenAI, Swagger docs, DI — all included and ready to use.
 
-- **Modular Structure:** Organize your project into modules for better code organization and maintainability.
+---
 
-- **Middleware Support:** Easily integrate middleware for handling cross-cutting concerns such as authentication, logging, and error handling.
+## Tech Stack
 
-- **Configuration Management:** Manage configuration settings efficiently with support for environment-specific configurations.
+| Layer | Technology |
+| --- | --- |
+| HTTP Framework | [Echo v4](https://echo.labstack.com/) |
+| ORM | [GORM](https://gorm.io/) |
+| Database | PostgreSQL / MySQL / MariaDB / SQLite |
+| Auth | JWT (RS256 / HS256) |
+| Migrations | [Goose](https://github.com/pressly/goose) (SQL-based) |
+| Dependency Injection | [Google Wire](https://github.com/google/wire) |
+| Logging | [Uber Zap](https://github.com/uber-go/zap) (structured JSON) |
+| API Docs | [Swaggo](https://github.com/swaggo/swag) (Swagger / OpenAPI) |
+| AWS | SES · S3 · SNS · SQS |
+| AI | [OpenAI Go SDK](https://github.com/openai/openai-go) |
 
-- **Database Integration:** Includes support for popular databases like PostgreSQL, MySQL, and SQLite.
-
-- **API Documentation:** Automatic generation of API documentation using Swaggo.
-
-- **Security Best Practices:** Enforce security best practices for handling authentication, authorization, and data protection.
-
-- **Logging and Monitoring:** Integrated logging and monitoring for better visibility into the application's behavior
+---
 
 ## Project Structure
 
-root\
-├── cmd               // first entry for run command\
-├── config            // logic for process config\
-├── docs              // auto gen swagger api docs\
-├── functions         // function run independent with api service\
-├── internal          // main logic of service\
-├── pkg               // for reusable\
-├── scripts           // bash script for run command\
-└── vendor            // dependencies package
+```
+├── cmd/
+│   ├── api/            # HTTP server entry point
+│   └── migration/      # Database migration CLI
+├── config/             # App configuration (env vars)
+├── internal/
+│   ├── api/
+│   │   ├── docs/       # Auto-generated Swagger docs
+│   │   ├── handler/    # HTTP handlers (per module)
+│   │   ├── router/     # Route registration
+│   │   └── service/    # Business logic + DTOs (per module)
+│   ├── di/             # Wire DI providers & generated code
+│   ├── migrations/     # SQL migration files (Goose)
+│   ├── model/          # GORM models
+│   └── repository/     # DB repository implementations
+└── pkg/
+    ├── aws/            # SES, S3, SNS, SQS wrappers
+    ├── database/       # Base repository with CRUD
+    ├── logging/        # Zap logger with context support
+    ├── openai/         # OpenAI chat, audio, streaming
+    ├── server/         # Echo setup, middleware, error handling
+    └── util/           # Config, crypter, request helpers, migrations
+```
 
-## Prerequisites
-
-- [Go](https://go.dev/dl/) ^1.19.1
-- [Docker](https://docs.docker.com/install/) ^4.12.0
-- [Docker Compose](https://docs.docker.com/compose/install/) ^2.10.2
-- [jq](https://stedolan.github.io/jq/download/) ^1.6.0
-- [swaggo](https://github.com/swaggo/swag#getting-started) ^1.16.2
-- [air](https://github.com/cosmtrek/air#installation) ^1.45.0
+---
 
 ## Getting Started
 
-1. Initialize the app for the first time:
-   ```bash
-   make provision
-   ```
-2. Generate swagger API docs:
-   ```bash
-   make specs
-   ```
-3. Run the development server:
-   ```bash
-   make dev
-   ```
-4. Documentation Apis:
-GoCore uses swagger open api, navigate to `/docs/index.html` for getting the list endpoints.
-The application runs as an HTTP server at port 8080. You can log in as superadmin to the application by:
+### Prerequisites
 
-```http
+*   [Go](https://go.dev/dl/) 1.24+
+*   [Docker](https://docs.docker.com/install/) & [Docker Compose](https://docs.docker.com/compose/install/)
+*   [swaggo/swag](https://github.com/swaggo/swag#getting-started) — for generating API docs
+*   [air](https://github.com/air-verse/air) — for hot reload in development
+*   [wire](https://github.com/google/wire) — for regenerating DI code
+
+### First-time Setup
+
+```
+# 1. Start the database and run migrations
+make provision
+
+# 2. Run the development server with hot reload
+make dev
+```
+
+The API is available at `http://localhost:8080`.  
+Swagger UI is available at `http://localhost:8080/docs/index.html`.
+
+### Default Credentials
+
+```
 POST /login HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
@@ -68,25 +87,85 @@ Content-Type: application/json
 }
 ```
 
-Then grab the `access_token` for authorization HTTP header:
+Use the returned `access_token` as a Bearer token for authenticated requests:
 
-```http
+```
 GET /v1/users HTTP/1.1
 Host: localhost:8080
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...
+Authorization: Bearer <access_token>
 ```
 
-## Deployment
-Comming soon
+---
+
+## Development Commands
+
+```
+make dev              # Run with hot reload (air)
+make specs            # Regenerate Swagger docs
+make wire             # Regenerate Wire DI code
+make test.cover       # Run tests with coverage report
+
+# Migrations
+make migrate          # Run pending migrations
+make migrate.status   # Show migration status
+make migrate.undo     # Rollback last migration
+make migrate.create name=<name>   # Create new migration file
+
+# Docker
+make docker.build     # Build production Docker image
+make docker.run       # Run container
+make docker.logs      # Tail container logs
+make docker.stop      # Stop and remove container
+```
+
+---
+
+## Architecture Pattern
+
+GoOne follows a strict **Service → Handler → Router** layered pattern:
+
+1.  **Repository** — data access, wraps GORM with custom queries
+2.  **Service** — business logic, DTOs, interface definitions
+3.  **Handler** — HTTP binding, delegates to service
+4.  **Router** — registers routes and attaches middleware
+
+Dependency injection is handled at compile-time via **Google Wire**, ensuring zero runtime reflection overhead.
+
+---
+
+## Configuration
+
+Environment variables are loaded with this priority (highest → lowest):
+
+1.  OS environment variables _(always wins — ideal for Docker/K8s)_
+2.  `.env.local` _(local overrides, gitignored)_
+3.  `.env` _(committed defaults)_
+
+Key variables: `STAGE`, `PORT`, `DB_TYPE`, `DB_DSN`, `JWT_SECRET`, `JWT_DURATION`, `JWT_ALGORITHM`, `ALLOW_ORIGINS`.
+
+---
+
+## Docker Deployment
+
+The included `Dockerfile` uses a multi-stage build producing a ~20–30MB image with auto-migration on startup.
+
+```
+make docker.build
+make docker.run
+```
+
+Health check endpoint: `GET /health`
+
+---
 
 ## Installation
 
-```bash
-go get -u github.com/vuduongtp/go-core
 ```
-## Project References & Credits
+go get -u github.com/kevinxvu/goone
+```
 
-- [https://github.com/M15t/ghoul](https://github.com/M15t/ghoul)
+---
 
 ## License
-This project is made available under the MIT license. See [LICENSE](https://github.com/vuduongtp/go-core/blob/main/LICENSE) for details.
+
+MIT — see [LICENSE](https://github.com/kevinxvu/goone/blob/main/LICENSE) for details.

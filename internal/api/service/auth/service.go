@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/database"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
+	"github.com/kevinxvu/goone/pkg/util/crypter"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
-	"github.com/vuduongtp/go-core/pkg/util/crypter"
 
 	"gorm.io/gorm"
 )

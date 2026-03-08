@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/imdatngo/gowhere"
-	"github.com/vuduongtp/go-core/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/logging"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"

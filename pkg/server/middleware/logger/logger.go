@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kevinxvu/goone/pkg/logging"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/pkg/logging"
 	"go.uber.org/zap"
 )
 

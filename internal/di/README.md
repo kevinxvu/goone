@@ -158,7 +158,7 @@ cd internal/di && GOFLAGS=-mod=mod wire
 ### Output:
 
 ```
-wire: github.com/vuduongtp/go-core/internal/di: wrote /home/duongvu/github/go-core/internal/di/wire_gen.go
+wire: github.com/kevinxvu/goone/internal/di: wrote /home/duongvu/github/go-core/internal/di/wire_gen.go
 ```
 
 ## Sử dụng trong main.go
@@ -167,7 +167,7 @@ wire: github.com/vuduongtp/go-core/internal/di: wrote /home/duongvu/github/go-co
 package main
 
 import (
-    "github.com/vuduongtp/go-core/internal/di"
+    "github.com/kevinxvu/goone/internal/di"
 )
 
 func main() {
@@ -261,7 +261,7 @@ cd internal/di && GOFLAGS=-mod=mod wire
 package main
 
 import (
-    "github.com/vuduongtp/go-core/internal/di"
+    "github.com/kevinxvu/goone/internal/di"
 )
 
 func main() {
@@ -300,7 +300,7 @@ wire: wire.go:53:33: undefined: dbutil.DB
 **Giải pháp:** Kiểm tra import:
 ```go
 import (
-    pkgdb "github.com/vuduongtp/go-core/pkg/util/db"
+    pkgdb "github.com/kevinxvu/goone/pkg/util/db"
 )
 
 func ProvideCountryDB() *pkgdb.DB {  // Dùng alias đúng

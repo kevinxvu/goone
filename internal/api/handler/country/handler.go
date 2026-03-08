@@ -5,11 +5,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/kevinxvu/goone/internal/api/service/country"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
+	"github.com/kevinxvu/goone/pkg/util/request"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/internal/api/service/country"
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
-	"github.com/vuduongtp/go-core/pkg/util/request"
 )
 
 // HTTP represents country http service

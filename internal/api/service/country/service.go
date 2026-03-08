@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/database"
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
-	structutil "github.com/vuduongtp/go-core/pkg/util/struct"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/database"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
+	structutil "github.com/kevinxvu/goone/pkg/util/struct"
 
 	"gorm.io/gorm"
 )

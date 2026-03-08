@@ -8,14 +8,14 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/kevinxvu/goone/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
+	"github.com/kevinxvu/goone/pkg/server/binder"
+	loggerMw "github.com/kevinxvu/goone/pkg/server/middleware/logger"
+	"github.com/kevinxvu/goone/pkg/server/middleware/secure"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/vuduongtp/go-core/pkg/logging"
-	"github.com/vuduongtp/go-core/pkg/server/apperr"
-	"github.com/vuduongtp/go-core/pkg/server/binder"
-	loggerMw "github.com/vuduongtp/go-core/pkg/server/middleware/logger"
-	"github.com/vuduongtp/go-core/pkg/server/middleware/secure"
 	"go.uber.org/zap"
 )
 

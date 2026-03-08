@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/kevinxvu/goone/internal/api/service/user"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/util/request"
 	"github.com/labstack/echo/v4"
-	"github.com/vuduongtp/go-core/internal/api/service/user"
-	"github.com/vuduongtp/go-core/internal/model"
-	"github.com/vuduongtp/go-core/pkg/util/request"
 )
 
 // HTTP represents user http service
