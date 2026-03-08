@@ -17,4 +17,4 @@ type Base struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	// DeletedAt *time.Time `json:"deleted_at" sql:"index"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-} // @name Base
+} //	@name	Base

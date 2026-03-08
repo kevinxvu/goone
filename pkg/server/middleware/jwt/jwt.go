@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vuduongtp/go-core/pkg/server"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
+	"github.com/kevinxvu/goone/internal/model"
+	"github.com/kevinxvu/goone/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -43,9 +44,9 @@ func (j *Service) MWFunc() echo.MiddlewareFunc {
 			token, err := j.ParseTokenFromHeader(c)
 			if err != nil || !token.Valid {
 				if err != nil {
-					logger.LogErrorf(c.Request().Context(), "error parsing token: %+v", err.Error())
+					logging.FromContext(c.Request().Context()).Sugar().Errorf("error parsing token: %+v", err.Error())
 				}
-				return server.NewHTTPError(http.StatusUnauthorized, "UNAUTHORIZED", "Your session is unauthorized or has expired.").SetInternal(err)
+				return apperr.NewHTTPError(http.StatusUnauthorized, "UNAUTHORIZED", "Your session is unauthorized or has expired.").SetInternal(err)
 			}
 
 			claims := token.Claims.(jwt.MapClaims)
@@ -93,5 +94,20 @@ func (j *Service) GenerateToken(claims map[string]interface{}, expire *time.Time
 	token := jwt.NewWithClaims(j.algo, jwt.MapClaims(claims))
 	tokenString, err := token.SignedString(j.key)
 
-	return tokenString, int(expire.Sub(time.Now()).Seconds()), err
+	return tokenString, int(time.Until(*expire).Seconds()), err
+}
+
+// User returns user data stored in jwt token
+func (j *Service) User(c echo.Context) *model.AuthUser {
+	id, _ := c.Get("id").(float64)
+	username, _ := c.Get("username").(string)
+	email, _ := c.Get("email").(string)
+	role, _ := c.Get("role").(string)
+
+	return &model.AuthUser{
+		ID:       int(id),
+		Username: username,
+		Email:    email,
+		Role:     role,
+	}
 }

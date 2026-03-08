@@ -3,20 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/vuduongtp/go-core/config"
-	"github.com/vuduongtp/go-core/docs"
-	_ "github.com/vuduongtp/go-core/docs"
-	"github.com/vuduongtp/go-core/internal/api/auth"
-	"github.com/vuduongtp/go-core/internal/api/country"
-	"github.com/vuduongtp/go-core/internal/api/user"
-	userdb "github.com/vuduongtp/go-core/internal/db/user"
-	"github.com/vuduongtp/go-core/internal/rbac"
-	dbutil "github.com/vuduongtp/go-core/internal/util/db"
-	"github.com/vuduongtp/go-core/pkg/server"
-	"github.com/vuduongtp/go-core/pkg/server/middleware/jwt"
-	"github.com/vuduongtp/go-core/pkg/util/crypter"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
-	swaggerutil "github.com/vuduongtp/go-core/pkg/util/swagger"
+	"github.com/kevinxvu/goone/internal/api/docs"
+	"github.com/kevinxvu/goone/internal/api/router"
+	"github.com/kevinxvu/goone/internal/di"
+	"github.com/kevinxvu/goone/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/server"
+	swaggerutil "github.com/kevinxvu/goone/pkg/util/swagger"
+	"go.uber.org/zap/zapcore"
 )
 
 //	@title			GoCore Example API
@@ -39,62 +32,42 @@ import (
 // @in							header
 // @name						Authorization
 func main() {
-	cfg, err := config.Load()
+	// Initialize application with Wire DI
+	app, err := di.InitializeApplication()
 	checkErr(err)
 
-	db, err := dbutil.New(cfg.DbType, cfg.DbDsn, cfg.DbLog)
-	checkErr(err)
-	// connection.Close() is not available for GORM 1.20.0
-	// defer db.Close()
-
-	sqlDB, err := db.DB()
-	defer sqlDB.Close()
-
-	// Initialize HTTP server
-	e := server.New(&server.Config{
-		Stage:        cfg.Stage,
-		Port:         cfg.Port,
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
-		AllowOrigins: cfg.AllowOrigins,
-		Debug:        cfg.Debug,
+	// Configure logging
+	logLevel := zapcore.InfoLevel
+	if app.Config.Debug {
+		logLevel = zapcore.DebugLevel
+	}
+	logging.SetConfig(&logging.Config{
+		Level:      logLevel,
+		FilePath:   "logs/app.log",
+		TimeFormat: "2006-01-02 15:04:05",
 	})
 
+	// Ensure DB connection is closed on exit
+	sqlDB, err := app.DB.DB()
+	checkErr(err)
+	defer sqlDB.Close()
+
 	// Static page for Swagger API specs
-	if cfg.IsEnableAIPDocs {
-		docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
-		e.GET(fmt.Sprintf("/%s/*", cfg.APIDocsPath), swaggerutil.WrapHandler)
+	if app.Config.IsEnableAIPDocs {
+		docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", app.Config.Host, app.Config.Port)
+		e := app.Server
+		e.GET(fmt.Sprintf("/%s/*", app.Config.APIDocsPath), swaggerutil.WrapHandler)
 	}
 
-	// Initialize DB interfaces
-	userDB := userdb.NewDB()
-	countryDB := country.NewDB()
-
-	// Initialize services
-	crypterSvc := crypter.New()
-	rbacSvc := rbac.New(cfg.Debug)
-	jwtSvc := jwt.New(cfg.JwtAlgorithm, cfg.JwtSecret, cfg.JwtDuration)
-	authSvc := auth.New(db, userDB, jwtSvc, crypterSvc)
-	userSvc := user.New(db, userDB, rbacSvc, crypterSvc)
-	countrySvc := country.New(db, countryDB, rbacSvc)
-
-	// Initialize root API
-	auth.NewHTTP(authSvc, e)
-
-	// Initialize v1 API
-	v1Router := e.Group("/v1")
-	v1Router.Use(jwtSvc.MWFunc())
-
-	user.NewHTTP(userSvc, authSvc, v1Router.Group("/users"))
-	country.NewHTTP(countrySvc, authSvc, v1Router.Group("/countries"))
+	// Register all API routes
+	router.RegisterRoutes(app)
 
 	// Start the HTTP server
-	server.Start(e, cfg.Stage == "development")
+	server.Start(app.Server, app.Config.Stage == "development")
 }
 
 func checkErr(err error) {
 	if err != nil {
-		logger.Panic(err)
-		panic(err)
+		logging.DefaultLogger().Panic(err.Error())
 	}
 }

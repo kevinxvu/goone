@@ -8,12 +8,15 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/kevinxvu/goone/pkg/logging"
+	"github.com/kevinxvu/goone/pkg/server/apperr"
+	"github.com/kevinxvu/goone/pkg/server/binder"
+	loggerMw "github.com/kevinxvu/goone/pkg/server/middleware/logger"
+	"github.com/kevinxvu/goone/pkg/server/middleware/secure"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/vuduongtp/go-core/pkg/server/middleware/secure"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
-	"github.com/vuduongtp/go-logadapter"
+	"go.uber.org/zap"
 )
 
 // Config represents server specific config
@@ -62,12 +65,12 @@ func (c *Config) fillDefaults() {
 func New(cfg *Config) *echo.Echo {
 	cfg.fillDefaults()
 	e := echo.New()
-	e.Validator = NewValidator()
-	e.HTTPErrorHandler = NewErrorHandler(e).Handle
-	e.Binder = NewBinder()
+	e.Validator = binder.NewValidator()
+	e.HTTPErrorHandler = apperr.NewErrorHandler(e).Handle
+	e.Binder = binder.NewBinder()
 	e.Debug = cfg.Debug
-	e.Logger = logadapter.NewEchoLogger()
-	e.Use(logadapter.NewEchoLoggerMiddleware())
+	e.Logger.SetOutput(zap.NewStdLog(logging.DefaultLogger().Sugar().Desugar()).Writer())
+	e.Use(loggerMw.Middleware())
 	if e.Debug {
 		e.Logger.SetLevel(log.DEBUG)
 		e.Use(secure.BodyDump())
@@ -93,22 +96,22 @@ func Start(e *echo.Echo, isDevelopment bool) {
 	go func() {
 		if err := e.StartServer(e.Server); err != nil {
 			if err == http.ErrServerClosed {
-				logger.Info("shutting down the server")
+				logging.DefaultLogger().Info("shutting down the server")
 			} else {
-				logger.Error("shutting down the server", err)
+				logging.DefaultLogger().Error("shutting down the server", logging.ErrField(err))
 			}
 		}
 	}()
 
 	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 10 seconds.
-	quit := make(chan os.Signal)
+	// a timeout of 30 seconds.
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		// Error from closing listeners, or context timeout:
-		logger.Error(fmt.Sprintf("⇨ http server shutting down error: %v\n", err))
+		logging.DefaultLogger().Sugar().Errorf("⇨ http server shutting down error: %v\n", err)
 	}
 }

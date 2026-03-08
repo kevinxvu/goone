@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/kevinxvu/goone/pkg/logging"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/lo"
-	"github.com/vuduongtp/go-core/pkg/util/logger"
+	"go.uber.org/zap/zapcore"
 )
 
 // Config represents secure specific config
@@ -61,9 +62,10 @@ func BodyDump() echo.MiddlewareFunc {
 				reqBody, _ = json.Marshal(bodymap)
 			}
 			if lo.Contains([]string{"Content-Disposition: form-data"}, string(reqBody)) {
-				logger.LogRequest(c.Request().Context(), "Request Body: multipart/form-data")
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "request"}).Info("Request Body: multipart/form-data")
+			} else {
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "request"}).Info(string(reqBody))
 			}
-			logger.LogRequest(c.Request().Context(), string(reqBody))
 		}
 
 		if (c.Request().Method == "PATCH" || c.Request().Method == "POST") && len(resBody) > 0 {
@@ -77,9 +79,10 @@ func BodyDump() echo.MiddlewareFunc {
 				resBody, _ = json.Marshal(bodymap)
 			}
 			if lo.Contains([]string{"Content-Disposition: form-data"}, string(reqBody)) {
-				logger.LogResponse(c.Request().Context(), "Request Body: multipart/form-data")
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "response"}).Info("Request Body: multipart/form-data")
+			} else {
+				logging.FromContext(c.Request().Context()).With(zapcore.Field{Key: "type", Type: zapcore.StringType, String: "response"}).Info(string(resBody))
 			}
-			logger.LogResponse(c.Request().Context(), string(resBody))
 		}
 	})
 }

@@ -19,18 +19,41 @@ provision: depends ## Provision dev environment
 	@$(MAKE) migrate
 
 dev: ## Bring up the server on dev environment with hot reload
-	docker-compose up -d
-	sh scripts/waitdb.sh
 	air
 
 remove: ## Bring down the server on dev environment, remove all docker related stuffs as well
 	docker-compose down -v --remove-orphans
 
 migrate: ## Run database migrations
-	go run cmd/migration/main.go
+	go run cmd/migration/main.go up
 
 migrate.undo: ## Undo the last database migration
-	go run cmd/migration/main.go --down
+	go run cmd/migration/main.go down
+
+migrate.status: ## Check migration status
+	go run cmd/migration/main.go status
+
+migrate.version: ## Show current migration version
+	go run cmd/migration/main.go version
+
+migrate.create: ## Create new migration file (usage: make migrate.create name=add_users_table)
+	@if [ -z "$(name)" ]; then \
+		echo "Error: name is required. Usage: make migrate.create name=add_users_table"; \
+		exit 1; \
+	fi
+	go run cmd/migration/main.go create $(name) sql
+
+migrate.reset: ## Rollback all migrations
+	go run cmd/migration/main.go reset
+
+migrate.redo: ## Redo the last migration
+	go run cmd/migration/main.go redo
+
+wire: ## Generate wire dependency injection code
+	cd internal/di && GOFLAGS=-mod=mod wire
+
+wire.check: ## Check if wire code is up to date
+	cd internal/di && GOFLAGS=-mod=mod wire check
 
 seed: ## Run database seeder
 	echo "To be done!"
@@ -56,41 +79,33 @@ build.arm: clean ## Build the server binary file for ARM host
 build.air:  ## Build the server binary file for air hot reload
 	sh scripts/build-air.sh
 
-install:
-	echo "Not ready yet!"
-	echo "To setup PostgreSQL, check 'scripts/install-pg.sh'"
-	echo "To setup the server, check 'scripts/install-service.sh'"
-
 clean: ## Clean up the built & test files
 	rm -rf ./server ./*.out
 
 specs: ## Generate swagger specs
 	swag fmt -g /cmd/api/main.go
 	swag fmt -d ./internal/api
-	swag init --parseInternal --parseDependency --parseDepth 1 -g /cmd/api/main.go
+	swag init --parseInternal --parseDependency --parseDepth 1 -g /cmd/api/main.go -o ./internal/api/docs
 
-up: ## Execute `up` commands per env. Ex: make up dev "logs -f"
-	sh scripts/up.sh $(filter-out $@,$(MAKECMDGOALS))
+docker.build: ## Build Docker image
+	docker build -t gocore:latest .
 
-dev.deploy: ## Deploy to DEV environment
-	scripts/apex.sh dev deploy --alias dev
-	scripts/apex.sh dev invoke --alias dev migration
-	scripts/up.sh dev deploy dev
+docker.run: ## Run Docker container (requires running database)
+	docker run -d \
+		--name gocore \
+		-p 8080:8080 \
+		-e DB_DSN="goone:goone123@tcp(host.docker.internal:3306)/goone?charset=utf8mb4&parseTime=True&loc=Local" \
+		gocore:latest
 
-demo.deploy: ## Deploy to DEMO environment
-	scripts/apex.sh dev deploy --alias demo
-	scripts/apex.sh dev invoke --alias demo migration
-	scripts/up.sh dev deploy demo
+docker.stop: ## Stop Docker container
+	docker stop gocore || true
+	docker rm gocore || true
 
-stg.deploy: ## Deploy to STAGING environment
-	scripts/apex.sh client deploy --alias staging
-	scripts/apex.sh client invoke --alias staging migration
-	scripts/up.sh client deploy staging
+docker.logs: ## View Docker container logs
+	docker logs -f gocore
 
-prod.deploy: ## Deploy to PROD environment
-	scripts/apex.sh client deploy --alias production
-	scripts/apex.sh client invoke --alias production migration
-	scripts/up.sh client deploy production
+docker.export: ## Export Docker image to tar file
+	docker save gocore:latest -o gocore-latest.tar
 
 %: # prevent error for `up` target when passing arguments
 ifeq ($(filter up,$(MAKECMDGOALS)),up)
