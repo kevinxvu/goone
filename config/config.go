@@ -26,11 +26,12 @@ type Configuration struct {
 	APIDocsPath     string   `env:"API_DOCS_PATH"`
 
 	// OpenAI configuration
-	OpenAIAPIKey       string `env:"OPENAI_API_KEY"`
-	OpenAIBaseURL      string `env:"OPENAI_BASE_URL"`
-	OpenAITimeout      int    `env:"OPENAI_TIMEOUT"`
-	OpenAIMaxRetries   int    `env:"OPENAI_MAX_RETRIES"`
-	OpenAIDefaultModel string `env:"OPENAI_DEFAULT_MODEL"`
+	OpenAIAPIKey     string `env:"OPENAI_API_KEY"`
+	OpenAIBaseURL    string `env:"OPENAI_BASE_URL"`
+	OpenAITimeout    int    `env:"OPENAI_TIMEOUT"`
+	OpenAIMaxRetries int    `env:"OPENAI_MAX_RETRIES"`
+	OpenAITextModel  string `env:"OPENAI_TEXT_MODEL"`
+	OpenAIAudioModel string `env:"OPENAI_AUDIO_MODEL"`
 }
 
 // Load returns Configuration struct

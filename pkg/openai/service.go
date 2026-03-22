@@ -11,11 +11,14 @@ import (
 
 // Config holds the configuration for the OpenAI service
 type Config struct {
-	APIKey       string
-	BaseURL      string
-	Timeout      int
-	MaxRetries   int
-	DefaultModel string
+	APIKey     string
+	BaseURL    string
+	Timeout    int
+	MaxRetries int
+
+	// Model defaults per capability
+	TextModel  string // Default model for chat/text completions (e.g. gpt-4o)
+	AudioModel string // Default model for audio transcription/translation (e.g. whisper-1)
 }
 
 // Service represents the OpenAI service

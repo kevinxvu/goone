@@ -32,7 +32,7 @@ func (s *Service) ChatCompletionStream(ctx context.Context, req ChatRequest, han
 	}
 
 	// Determine model to use
-	model := s.getModelOrDefault(req.Model)
+	model := s.getTextModel(req.Model)
 
 	// Build parameters with streaming enabled
 	params := openai.ChatCompletionNewParams{
