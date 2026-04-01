@@ -62,16 +62,26 @@ func (s *Service) buildMessages(messages []Message, systemPrompt *string) ([]ope
 	return result, nil
 }
 
-// getModelOrDefault returns the model from the request or the default model
-func (s *Service) getModelOrDefault(model *string) string {
+// getTextModel returns the model from the request or the configured text/chat default
+func (s *Service) getTextModel(model *string) string {
 	if model != nil && *model != "" {
 		return *model
 	}
-	if s.cfg.DefaultModel != "" {
-		return s.cfg.DefaultModel
+	if s.cfg.TextModel != "" {
+		return s.cfg.TextModel
 	}
-	// Fallback to gpt-4 if no default is configured
-	return "gpt-4"
+	return "gpt-4o"
+}
+
+// getAudioModel returns the configured audio transcription/translation model default
+func (s *Service) getAudioModel(model *string) string {
+	if model != nil && *model != "" {
+		return *model
+	}
+	if s.cfg.AudioModel != "" {
+		return s.cfg.AudioModel
+	}
+	return "whisper-1"
 }
 
 // Helper functions for creating pointers (useful in DTOs)

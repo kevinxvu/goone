@@ -42,7 +42,7 @@ func (s *Service) TranscribeAudio(ctx context.Context, req AudioRequest) (*Audio
 	// Build parameters
 	params := openai.AudioTranscriptionNewParams{
 		File:  req.File,
-		Model: openai.AudioModelWhisper1,
+		Model: openai.AudioModel(s.getAudioModel(nil)),
 	}
 
 	// Apply optional parameters
@@ -100,7 +100,7 @@ func (s *Service) TranslateAudio(ctx context.Context, req AudioRequest) (*AudioR
 	// Build parameters
 	params := openai.AudioTranslationNewParams{
 		File:  req.File,
-		Model: openai.AudioModelWhisper1,
+		Model: openai.AudioModel(s.getAudioModel(nil)),
 	}
 
 	// Apply optional parameters

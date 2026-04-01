@@ -60,7 +60,7 @@ func (s *Service) ChatCompletion(ctx context.Context, req ChatRequest) (*ChatRes
 	}
 
 	// Determine model to use
-	model := s.getModelOrDefault(req.Model)
+	model := s.getTextModel(req.Model)
 
 	// Build parameters
 	params := openai.ChatCompletionNewParams{

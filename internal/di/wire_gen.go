@@ -124,11 +124,12 @@ func ProvideServer(cfg *config.Configuration) *echo.Echo {
 // ProvideOpenAIService creates OpenAI service
 func ProvideOpenAIService(cfg *config.Configuration) *openai.Service {
 	return openai.New(openai.Config{
-		APIKey:       cfg.OpenAIAPIKey,
-		BaseURL:      cfg.OpenAIBaseURL,
-		Timeout:      cfg.OpenAITimeout,
-		MaxRetries:   cfg.OpenAIMaxRetries,
-		DefaultModel: cfg.OpenAIDefaultModel,
+		APIKey:     cfg.OpenAIAPIKey,
+		BaseURL:    cfg.OpenAIBaseURL,
+		Timeout:    cfg.OpenAITimeout,
+		MaxRetries: cfg.OpenAIMaxRetries,
+		TextModel:  cfg.OpenAITextModel,
+		AudioModel: cfg.OpenAIAudioModel,
 	})
 }
 
