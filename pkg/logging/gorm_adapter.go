@@ -77,6 +77,6 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql 
 	case elapsed > l.slowThreshold && l.slowThreshold != 0 && l.logLevel >= gormlogger.Warn:
 		logger.Warn(fmt.Sprintf("slow sql >= %v", l.slowThreshold), fields...)
 	case l.logLevel >= gormlogger.Info:
-		logger.Debug("gorm trace", fields...)
+		logger.Info("gorm trace", fields...)
 	}
 }
